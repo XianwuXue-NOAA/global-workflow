@@ -39,6 +39,8 @@ sorc/gsi.fd
 sorc/ufs_utils.fd
 sorc/verif-global.fd
 
+sorc/upp.fd
+
 # Ignore sorc symlinks
 #---------------------
 sorc/calc_analysis.fd

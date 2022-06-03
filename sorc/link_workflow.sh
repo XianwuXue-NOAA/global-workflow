@@ -257,7 +257,8 @@ done
 $LINK ../sorc/ufs_model.fd/build/ufs_model .
 
 [[ -s gfs_ncep_post ]] && rm -f gfs_ncep_post
-$LINK ../sorc/upp.fd/exec/upp.x gfs_ncep_post
+#$LINK ../sorc/upp.fd/exec/upp.x gfs_ncep_post
+$LINK ../sorc/ufs_model.fd/FV3/upp/tests/install/bin/upp.x gfs_ncep_post
 
 if [ -d ${pwd}/gfs_wafs.fd ]; then 
     for wafsexe in \
