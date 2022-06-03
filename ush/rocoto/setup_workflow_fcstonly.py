@@ -32,7 +32,7 @@ taskplan = ['getic', 'init', 'coupled_ic', 'aerosol_init', 'waveinit', 'waveprep
 def main():
     parser = ArgumentParser(description='Setup XML workflow and CRONTAB for a forecast only experiment.', formatter_class=ArgumentDefaultsHelpFormatter)
     parser.add_argument('--expdir',help='full path to experiment directory containing config files', type=str, required=False, default=os.environ['PWD'])
-    parser.add_argument('--cdump',help='cycle to run forecasts', type=str, choices=['gdas', 'gfs'], default='gfs', required=False)
+    parser.add_argument('--cdump',help='cycle to run forecasts', type=str, choices=['gdas', 'gfs', 'gefs'], default='gfs', required=False)
 
     args = parser.parse_args()
 
