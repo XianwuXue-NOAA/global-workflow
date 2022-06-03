@@ -160,7 +160,7 @@ def edit_baseconfig(host, inputs):
             "@CASEENS@": f'C{inputs.resens}',
             "@NMEM_ENKF@": inputs.nens,
         }
-    elif inputs.mode in ['forecast-only']:
+    elif inputs.mode in ['forecast-only', 'gefs']:
         extend_dict = {
             "@DO_AERO@": inputs.aerosols,
         }

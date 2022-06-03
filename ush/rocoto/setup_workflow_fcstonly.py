@@ -136,7 +136,7 @@ def get_definitions(base):
     strings.append('\t<!-- ROCOTO parameters that control workflow -->\n')
     strings.append('\t<!ENTITY CYCLETHROTTLE "2">\n')
     strings.append('\t<!ENTITY TASKTHROTTLE  "25">\n')
-    strings.append('\t<!ENTITY MAXTRIES      "2">\n')
+    strings.append('\t<!ENTITY MAXTRIES      "1">\n')
     strings.append('\n')
 
     return ''.join(strings)
@@ -201,6 +201,13 @@ def get_postgroups(post, cdump='gdas'):
     if cdump in ['gdas']:
         fhrs = list(range(fhmin, fhmax + fhout, fhout))
     elif cdump in ['gfs']:
+        fhmax = np.max([post['FHMAX_GFS_00'], post['FHMAX_GFS_06'], post['FHMAX_GFS_12'], post['FHMAX_GFS_18']])
+        fhout = post['FHOUT_GFS']
+        fhmax_hf = post['FHMAX_HF_GFS']
+        fhout_hf = post['FHOUT_HF_GFS']
+        fhrs_hf = list(range(fhmin, fhmax_hf + fhout_hf, fhout_hf))
+        fhrs = fhrs_hf + list(range(fhrs_hf[-1] + fhout, fhmax + fhout, fhout))
+    elif cdump in ['gefs']:
         fhmax = np.max([post['FHMAX_GFS_00'], post['FHMAX_GFS_06'], post['FHMAX_GFS_12'], post['FHMAX_GFS_18']])
         fhout = post['FHOUT_GFS']
         fhmax_hf = post['FHMAX_HF_GFS']
@@ -877,7 +884,10 @@ def create_xml(dict_configs):
     workflow = temp_workflow
 
     # Start writing the XML file
-    fh = open(f'{base["EXPDIR"]}/{base["PSLOT"]}.xml', 'w')
+    if base['CDUMP'] == "gefs":
+        fh = open(f'{base["EXPDIR"]}/{base["CDUMP"]}.xml', 'w')
+    else:
+        fh = open(f'{base["EXPDIR"]}/{base["PSLOT"]}.xml', 'w')
 
     fh.write(preamble)
     fh.write(definitions)
