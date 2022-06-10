@@ -38,7 +38,11 @@ if [ ${RETRO:-"NO"} = "NO" ]; then # Operational input
     export RUNICSH=${GDASINIT_DIR}/run_${gfs_ver}.chgres.sh
   elif [[ "$CDATE" -lt "2021032100" ]]; then
     export gfs_ver=v15
-    export RUNICSH=${GDASINIT_DIR}/run_${gfs_ver}.chgres.gfs.sh
+    if [[ $CDUMP == "gefs" ]]; then
+      export RUNICSH=${GDASINIT_DIR}/run_${gfs_ver}.chgres.gefs.sh
+    else
+      export RUNICSH=${GDASINIT_DIR}/run_${gfs_ver}.chgres.gfs.sh
+    fi
   elif [[ "$CDATE" -lt "2021032106" ]]; then
     # The way the v16 switch over was done, there is no complete
     # set of v16 or v15 data for 2021032100.  And although
