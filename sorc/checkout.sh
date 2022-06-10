@@ -133,7 +133,7 @@ errs=0
 checkout "ufs_model.fd"    "https://github.com/ufs-community/ufs-weather-model" "${ufs_model_hash:-Prototype-P8c}"; errs=$((errs + $?))
 checkout "gsi.fd"          "https://github.com/NOAA-EMC/GSI.git"                "a62dec6"                         ; errs=$((errs + $?))
 checkout "gldas.fd"        "https://github.com/NOAA-EMC/GLDAS.git"              "gldas_gfsv16_release.v.1.28.0"   ; errs=$((errs + $?))
-checkout "ufs_utils.fd"    "https://github.com/ufs-community/UFS_UTILS.git"     "04ad17e"                         ; errs=$((errs + $?))
+checkout "ufs_utils.fd"    "git@github.com:XianwuXue-NOAA/UFS_UTILS.git"        "feature/gefs_v13"                ; errs=$((errs + $?))
 checkout "verif-global.fd" "https://github.com/NOAA-EMC/EMC_verif-global.git"   "c267780"                         ; errs=$((errs + $?))
 
 if [[ "${checkout_wafs:-NO}" == "YES" ]]; then
