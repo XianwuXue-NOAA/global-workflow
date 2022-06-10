@@ -54,6 +54,7 @@ export gfs_ver=${gfs_ver:-"v16"}
 export OPS_RES=${OPS_RES:-"C768"}
 export GETICSH=${GETICSH:-${GDASINIT_DIR}/get_v16.data.sh}
 
+export RUNMEM=${RUNMEM:-"c00"}
 # Create ROTDIR/EXTRACT_DIR
 if [ ! -d $ROTDIR ]; then mkdir -p $ROTDIR ; fi
 if [ ! -d $EXTRACT_DIR ]; then mkdir -p $EXTRACT_DIR ; fi
@@ -99,11 +100,25 @@ else # Pull chgres cube inputs for cold start IC generation
 fi
 
 # Move extracted data to ROTDIR
-if [ ! -d ${ROTDIR}/${CDUMP}.${yy}${mm}${dd}/${hh}/${COMPONENT} ]; then mkdir -p ${ROTDIR}/${CDUMP}.${yy}${mm}${dd}/${hh}/${COMPONENT} ; fi
+if [ ! -d ${ROTDIR}/${CDUMP}.${yy}${mm}${dd}/${hh}/${RUNMEM}/${COMPONENT} ]; then mkdir -p ${ROTDIR}/${CDUMP}.${yy}${mm}${dd}/${hh}/${RUNMEM}/${COMPONENT} ; fi
 if [ $gfs_ver = v16 -a $RETRO = "YES" ]; then
-  mv ${EXTRACT_DIR}/${CDUMP}.${yy}${mm}${dd}/${hh}/* ${ROTDIR}/${CDUMP}.${yy}${mm}${dd}/${hh}/${COMPONENT}
+  if [[ $CDUMP == "gefs" ]]; then
+    ls -l
+    mv ${EXTRACT_DIR}/${CDUMP}.${yy}${mm}${dd}/${hh}/${RUNMEM}/${COMPONENT}/* ${ROTDIR}/${CDUMP}.${yy}${mm}${dd}/${hh}/${RUNMEM}/${COMPONENT}
+  else
+    mv ${EXTRACT_DIR}/${CDUMP}.${yy}${mm}${dd}/${hh}/* ${ROTDIR}/${CDUMP}.${yy}${mm}${dd}/${hh}/${COMPONENT}
+  fi
 else
-  mv ${EXTRACT_DIR}/${CDUMP}.${yy}${mm}${dd}/${hh}/* ${ROTDIR}/${CDUMP}.${yy}${mm}${dd}/${hh}
+  if [[ $CDUMP == "gefs" ]]; then
+    ls -l
+    if [ $gfs_ver = v13 -o $gfs_ver = v14 -o $gfs_ver = v15 ]; then
+      mv ${EXTRACT_DIR}/${CDUMP}.${yy}${mm}${dd}/${hh}/${RUNMEM}/* ${ROTDIR}/${CDUMP}.${yy}${mm}${dd}/${hh}/${RUNMEM}
+    else
+      mv ${EXTRACT_DIR}/${CDUMP}.${yy}${mm}${dd}/${hh}/${RUNMEM}/${COMPONENT}/* ${ROTDIR}/${CDUMP}.${yy}${mm}${dd}/${hh}/${RUNMEM}/${COMPONENT}
+    fi
+  else
+    mv ${EXTRACT_DIR}/${CDUMP}.${yy}${mm}${dd}/${hh}/* ${ROTDIR}/${CDUMP}.${yy}${mm}${dd}/${hh}
+  fi
 fi
 
 # Pull pgbanl file for verification/archival - v14+
@@ -113,17 +128,24 @@ if [ $gfs_ver = v14 -o $gfs_ver = v15 -o $gfs_ver = v16 ]; then
     file=gfs.t${hh}z.pgrb2.${grid}.anl
 
     if [ $gfs_ver = v14 ]; then # v14 production source
-
-      cd $ROTDIR/${CDUMP}.${yy}${mm}${dd}/${hh}/${COMPONENT}
+      if [[ $CDUMP == "gefs" ]]; then
+        cd $ROTDIR/${CDUMP}.${yy}${mm}${dd}/${hh}/${RUNMEM}/${COMPONENT}
+      else
+        cd $ROTDIR/${CDUMP}.${yy}${mm}${dd}/${hh}/${COMPONENT}
+      fi
       export tarball="gpfs_hps_nco_ops_com_gfs_prod_gfs.${yy}${mm}${dd}${hh}.pgrb2_${grid}.tar"
       htar -xvf ${PRODHPSSDIR}/rh${yy}/${yy}${mm}/${yy}${mm}${dd}/${tarball} ./${file}
-
     elif [ $gfs_ver = v15 ]; then # v15 production source
 
       cd $EXTRACT_DIR
       export tarball="com_gfs_prod_gfs.${yy}${mm}${dd}_${hh}.gfs_pgrb2.tar"
-      htar -xvf ${PRODHPSSDIR}/rh${yy}/${yy}${mm}/${yy}${mm}${dd}/${tarball} ./${CDUMP}.${yy}${mm}${dd}/${hh}/${file}
-      mv ${EXTRACT_DIR}/${CDUMP}.${yy}${mm}${dd}/${hh}/${file} ${ROTDIR}/${CDUMP}.${yy}${mm}${dd}/${hh}/${COMPONENT}/${file}
+      if [[ $CDUMP == "gefs" ]]; then
+        htar -xvf ${PRODHPSSDIR}/rh${yy}/${yy}${mm}/${yy}${mm}${dd}/${tarball} ./gfs.${yy}${mm}${dd}/${hh}/${file}
+        mv ${EXTRACT_DIR}/gfs.${yy}${mm}${dd}/${hh}/${file} ${ROTDIR}/${CDUMP}.${yy}${mm}${dd}/${hh}/${RUNMEM}/${COMPONENT}/${file}
+      else
+        htar -xvf ${PRODHPSSDIR}/rh${yy}/${yy}${mm}/${yy}${mm}${dd}/${tarball} ./${CDUMP}.${yy}${mm}${dd}/${hh}/${file}
+        mv ${EXTRACT_DIR}/${CDUMP}.${yy}${mm}${dd}/${hh}/${file} ${ROTDIR}/${CDUMP}.${yy}${mm}${dd}/${hh}/${COMPONENT}/${file}
+      fi
 
     elif [ $gfs_ver = v16 ]; then # v16 - determine RETRO or production source next
 
@@ -142,7 +164,13 @@ if [ $gfs_ver = v14 -o $gfs_ver = v15 -o $gfs_ver = v16 ]; then
 
         cd $ROTDIR
         export tarball="com_gfs_prod_gfs.${yy}${mm}${dd}_${hh}.gfs_pgrb2.tar"
-        htar -xvf ${PRODHPSSDIR}/rh${yy}/${yy}${mm}/${yy}${mm}${dd}/${tarball} ./${CDUMP}.${yy}${mm}${dd}/${hh}/atmos/${file}
+        if [[ $CDUMP == "gefs" ]]; then
+          htar -xvf ${PRODHPSSDIR}/rh${yy}/${yy}${mm}/${yy}${mm}${dd}/${tarball} ./gfs.${yy}${mm}${dd}/${hh}/atmos/${file}
+          mv ./gfs.${yy}${mm}${dd}/${hh}/atmos/${file} ${ROTDIR}/${CDUMP}.${yy}${mm}${dd}/${hh}/${RUNMEM}/${COMPONENT}/${file}
+          rm -rf ./gfs.${yy}${mm}${dd}
+        else
+          htar -xvf ${PRODHPSSDIR}/rh${yy}/${yy}${mm}/${yy}${mm}${dd}/${tarball} ./${CDUMP}.${yy}${mm}${dd}/${hh}/atmos/${file}
+        fi
 
       fi # RETRO vs production
 
