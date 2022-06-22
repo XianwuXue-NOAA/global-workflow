@@ -46,7 +46,7 @@ export gmm=$(echo $GDATE | cut -c5-6)
 export gdd=$(echo $GDATE | cut -c7-8)
 export ghh=$(echo $GDATE | cut -c9-10)
 
-export DATA=${DATA:-${DATAROOT}/getic}
+export DATA=${DATA:-${DATAROOT}/getic_${jobid:?}}
 export EXTRACT_DIR=${DATA:-$EXTRACT_DIR}
 export PRODHPSSDIR=${PRODHPSSDIR:-/NCEPPROD/hpssprod/runhistory}
 export COMPONENT="atmos"
