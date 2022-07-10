@@ -955,7 +955,10 @@ def create_xml(dict_configs):
     workflow = temp_workflow
 
     # Start writing the XML file
-    fh = open(f'{base["EXPDIR"]}/{base["PSLOT"]}.xml', 'w')
+    if base['CDUMP'] in ["gefs"]:
+        fh = open(f'{base["EXPDIR"]}/{base["CDUMP"]}.xml', 'w')
+    else:
+        fh = open(f'{base["EXPDIR"]}/{base["PSLOT"]}.xml', 'w')
 
     fh.write(preamble)
     fh.write(definitions)

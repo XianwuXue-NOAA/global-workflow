@@ -147,8 +147,8 @@ class HostInfo:
             'nwprod': '/scratch1/NCEPDEV/global/glopara/nwpara',
             'comroot': '/scratch1/NCEPDEV/global/glopara/com',
             'homedir': '/scratch1/NCEPDEV/global/$USER',
-            'stmp': '/scratch1/NCEPDEV/stmp2/$USER',
-            'ptmp': '/scratch1/NCEPDEV/stmp4/$USER',
+            'stmp': '/scratch2/NCEPDEV/stmp3/$USER/o/$PSLOT',
+            'ptmp': '/scratch2/NCEPDEV/stmp3/$USER',
             'noscrub': '$HOMEDIR',
             'account': 'fv3-cpu',
             'queue': 'batch',
@@ -499,7 +499,10 @@ def create_crontab(base, cronint=5):
 #
 #    else:
 
-    rocotorunstr = f'''{rocotoruncmd} -d {base['EXPDIR']}/{base['PSLOT']}.db -w {base['EXPDIR']}/{base['PSLOT']}.xml'''
+    if base['CDUMP'] in ["gefs"]:
+        rocotorunstr = f'''{rocotoruncmd} -d {base['EXPDIR']}/{base['CDUMP']}.db -w {base['EXPDIR']}/{base['CDUMP']}.xml'''
+    else:
+        rocotorunstr = f'''{rocotoruncmd} -d {base['EXPDIR']}/{base['PSLOT']}.db -w {base['EXPDIR']}/{base['PSLOT']}.xml'''
     cronintstr = f'*/{cronint} * * * *'
 
     # On WCOSS, rocoto module needs to be loaded everytime cron runs
