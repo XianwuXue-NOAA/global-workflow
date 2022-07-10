@@ -217,7 +217,7 @@ EOF
   bl_mynn_edmf_mom=${bl_mynn_edmf_mom:-"1"}
   min_lakeice  = ${min_lakeice:-"0.15"}
   min_seaice   = ${min_seaice:-"0.15"}
-  use_cice_alb = ${use_cice_alb:-".false."}
+  use_cice_alb = ${use_cice_alb:-".true."}
 EOF
   ;;
   FV3_GFS_v16_coupled*)
@@ -405,6 +405,17 @@ if [ ${DO_LAND_PERT:-"NO"} = "YES" ]; then
   n_var_lndp = ${n_var_lndp:-0}
 EOF
 fi
+
+  cat >> input.nml << EOF
+  sedi_semi = .true.
+  decfl = 10
+  iopt_trs = 2
+  pert_mp = ${pert_mp:-".false."}
+  pert_clds = ${pert_clds:-".false."}
+  pert_radtend = ${pert_radtend:-".false."}
+/
+
+EOF
 
 if [ $knob_ugwp_version -eq 0 ]; then
   cat >> input.nml << EOF
@@ -604,6 +615,28 @@ EOF
   use_zmtnblck = ${use_zmtnblck:-".true."}
 EOF
   fi
+OCN_SPPT="False"
+if [ $DO_OCN_SPPT = "YES" ]; then
+  OCN_SPPT="True"
+  cat >> input.nml <<EOF
+  OCNSPPT=${OCNSPPT:-1.0}
+  OCNSPPT_LSCALE=${OCNSPPT_LSCALE:-500e3}
+  OCNSPPT_TAU=${OCNSPPT_TAU:-21600}
+  ISEED_OCNSPPT=${ISEED_OCNSPPT:-$ISEED}
+EOF
+  fi
+
+PERT_EPBL="False"
+if [ $DO_OCN_PERT_EPBL = "YES" ]; then
+  PERT_EPBL="True"
+  cat >> input.nml <<EOF
+  EPBL=${EPBL:-1.0}
+  EPBL_LSCALE=${EPBL_LSCALE:-500e3}
+  EPBL_TAU=${EPBL_TAU:-21600}
+  ISEED_EPBL=${ISEED_EPBL:-$ISEED}
+EOF
+  fi
+
 
   cat >> input.nml << EOF
   $nam_stochy_nml

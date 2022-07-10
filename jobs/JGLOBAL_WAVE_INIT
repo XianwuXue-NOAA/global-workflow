@@ -58,8 +58,12 @@ export EXECwave=${EXECwave:-$HOMEgfs/exec}
 if [ $RUN_ENVIR = "nco" ]; then
     export ROTDIR=${COMROOT:?}/$NET/$envir
 fi
-export COMIN=${COMIN:-${ROTDIR}/${CDUMP}.${PDY}/${cyc}/$COMPONENT}
-export COMOUT=${COMOUT:-${ROTDIR}/${CDUMP}.${PDY}/${cyc}/$COMPONENT}
+#export COMIN=${COMIN:-${ROTDIR}/${CDUMP}.${PDY}/${cyc}/$COMPONENT}
+#export COMOUT=${COMOUT:-${ROTDIR}/${CDUMP}.${PDY}/${cyc}/$COMPONENT}
+
+export COMIN=${COMIN:-${ROTDIR}/c00/${CDUMP}.${PDY}/${cyc}/$COMPONENT}
+export COMOUT=${COMOUT:-${ROTDIR}/c00/${CDUMP}.${PDY}/${cyc}/$COMPONENT}
+
 [[ ! -d $COMOUT ]] && mkdir -m 775 -p $COMOUT
 
 if [ $SENDCOM = YES ]; then
@@ -72,6 +76,14 @@ export wave_mpmd=${mpmd:-"cfp"}
 
 # Execute the Script  
 $HOMEgfs/scripts/exgfs_wave_init.sh
+
+for mem in $MEMLIST
+do
+    [[ ! -d $DATA_DIR/gefs.$PDY/$cyc/$mem/${CDUMP}.${PDY}/${cyc}/$COMPONENT/rundata ]] && mkdir -m 775 -p $DATA_DIR/gefs.$PDY/$cyc/$mem/${CDUMP}.${PDY}/${cyc}/$COMPONENT/rundata
+    if [[ $mem != c00 ]] ; then
+        cp -r $DATA_DIR/gefs.$PDY/$cyc/c00/${CDUMP}.${PDY}/${cyc}/$COMPONENT/rundata/* $DATA_DIR/gefs.$PDY/$cyc/$mem/${CDUMP}.${PDY}/${cyc}/$COMPONENT/rundata
+    fi
+done
 
 ##########################################
 # Remove the Temporary working directory

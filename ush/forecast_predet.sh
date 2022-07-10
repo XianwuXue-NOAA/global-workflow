@@ -240,9 +240,10 @@ FV3_GFS_predet(){
   else
     prefix=enkf$CDUMP
     rprefix=enkf$rCDUMP
-    memchar=mem$(printf %03i $MEMBER)
+#    memchar=mem$(printf %03i $MEMBER)
   fi
-  memdir=$ROTDIR/${prefix}.$PDY/$cyc/atmos/$memchar
+#  memdir=$ROTDIR/${prefix}.$PDY/$cyc/atmos/$memchar
+   memdir=$COMROOT/gens/dev/gefs.$PDY/$cyc/$mem
   if [ ! -d $memdir ]; then mkdir -p $memdir; fi
 
   GDATE=$($NDATE -$assim_freq $CDATE)

@@ -134,7 +134,7 @@ EOF
     #.............................
 
   else ## cold start
-    for file in $(ls $memdir/INPUT/*.nc); do
+    for file in $(ls $memdir/FV3ICS/gfs/C384/INPUT/*.nc); do
       file2=$(echo $(basename $file))
       fsuf=$(echo $file2 | cut -c1-3)
       if [ $fsuf = "gfs" -o $fsuf = "sfc" ]; then
@@ -303,10 +303,19 @@ EOF
 
   # inline post fix files
   if [ $WRITE_DOPOST = ".true." ]; then
-    $NLN $PARM_POST/post_tag_gfs${LEVS}             $DATA/itag
-    $NLN $PARM_POST/postxconfig-NT-GFS-TWO.txt      $DATA/postxconfig-NT.txt
-    $NLN $PARM_POST/postxconfig-NT-GFS-F00-TWO.txt  $DATA/postxconfig-NT_FH00.txt
-    $NLN $PARM_POST/params_grib2_tbl_new            $DATA/params_grib2_tbl_new
+#    $NLN $PARM_POST/post_tag_gfs${LEV}            $DATA/itag
+#    $NLN $PARM_POST/postxconfig-NT-GFS-TWO.txt      $DATA/postxconfig-NT.txt
+#    $NLN $PARM_POST/postxconfig-NT-GFS-F00-TWO.txt  $DATA/postxconfig-NT_FH00.txt
+     $NLN $PARM_POST/params_grib2_tbl_new            $DATA/params_grib2_tbl_new
+
+                $NLN $PARM_POST/post_tag_gfs65               $DATA/itag
+                $NLN $PARM_POST/postxconfig-NT-GEFS.txt      $DATA/postxconfig-NT.txt
+                $NLN $PARM_POST/postxconfig-NT-GEFS-F00.txt  $DATA/postxconfig-NT_FH00.txt
+                memnum=$(echo $mem | cut -c2-3)
+                export e1=3
+                export e2=$memnum
+                export e3=10
+
   fi
 
   #------------------------------------------------------------------
@@ -469,11 +478,21 @@ EOF
 
   # Stochastic Physics Options
   if [ ${SET_STP_SEED:-"YES"} = "YES" ]; then
-    ISEED_SKEB=$((CDATE*1000 + MEMBER*10 + 1))
-    ISEED_SHUM=$((CDATE*1000 + MEMBER*10 + 2))
-    ISEED_SPPT=$((CDATE*1000 + MEMBER*10 + 3))
-    ISEED_CA=$(( (CDATE*1000 + MEMBER*10 + 4) % 2147483647 ))
-    ISEED_LNDP=$(( (CDATE*1000 + MEMBER*10 + 5) % 2147483647 ))
+#    ISEED_SKEB=$((CDATE*1000 + MEMBER*10 + 1))
+#    ISEED_SHUM=$((CDATE*1000 + MEMBER*10 + 2))
+#    ISEED_SPPT=$((CDATE*1000 + MEMBER*10 + 3))
+#    ISEED_CA=$(( (CDATE*1000 + MEMBER*10 + 4) % 2147483647 ))
+#    ISEED_LNDP=$(( (CDATE*1000 + MEMBER*10 + 5) % 2147483647 ))
+
+#        ISEED_SKEB=${ISEED_SKEB_hr:-$((CDATE*10000 + ${MEMBER#0}*100 + 1))}
+        ISEED_SKEB=0
+        ISEED_SPPT=${ISEED_SPPT_hr:-$((CDATE*10000 + ${MEMBER#0}*100 + 3)),$((CDATE*10000 + ${MEMBER#0}*100 + 4)),$((CDATE*10000 + ${MEMBER#0}*100 + 5)),$((CDATE*10000 + ${MEMBER#0}*100 + 6)),$((CDATE*10000 + ${MEMBER#0}*100 + 7))}
+#        ISEED_OCNSPPT=${ISEED_OCNSPPT:-$((CDATE*10000 + ${MEMBER#0}*100 + 8)),$((CDATE*10000 + ${MEMBER#0}*100 + 9)),$((CDATE*10000 + ${MEMBER#0}*100 + 10)),$((CDATE*10000 + ${MEMBER#0}*100 + 11)),$((CDATE*10000 + ${MEMBER#0}*100 + 12))}
+#        ISEED_EPBL=${ISEED_EPBL:-$((CDATE*10000 + ${MEMBER#0}*100 + 13)),$((CDATE*10000 + ${MEMBER#0}*100 + 14)),$((CDATE*10000 + ${MEMBER#0}*100 + 15)),$((CDATE*10000 + ${MEMBER#0}*100 + 16)),$((CDATE*10000 + ${MEMBER#0}*100 + 17))}
+                ISEED_CA=$(( (CDATE*10000 + ${MEMBER#0}*100 + 18) % 2147483647 ))
+#        ISEED_LNDP=${ISEED_LNDP:-$((CDATE*10000 + ${MEMBER#0}*100 + 2))}
+
+
   else
     ISEED=${ISEED:-0}
   fi
@@ -515,28 +534,60 @@ EOF
   fi
 
   if [ $QUILTING = ".true." -a $OUTPUT_GRID = "gaussian_grid" ]; then
-    fhr=$FHMIN
-    for fhr in $OUTPUT_FH; do
-      FH3=$(printf %03i $fhr)
-      FH2=$(printf %02i $fhr)
-      atmi=atmf${FH3}.$affix
-      sfci=sfcf${FH3}.$affix
-      logi=logf${FH3}
-      pgbi=GFSPRS.GrbF${FH2}
-      flxi=GFSFLX.GrbF${FH2}
-      atmo=$memdir/${CDUMP}.t${cyc}z.atmf${FH3}.$affix
-      sfco=$memdir/${CDUMP}.t${cyc}z.sfcf${FH3}.$affix
-      logo=$memdir/${CDUMP}.t${cyc}z.logf${FH3}.txt
-      pgbo=$memdir/${CDUMP}.t${cyc}z.master.grb2f${FH3}
-      flxo=$memdir/${CDUMP}.t${cyc}z.sfluxgrbf${FH3}.grib2
-      eval $NLN $atmo $atmi
-      eval $NLN $sfco $sfci
-      eval $NLN $logo $logi
-      if [ $WRITE_DOPOST = ".true." ]; then
-        eval $NLN $pgbo $pgbi
-        eval $NLN $flxo $flxi
-      fi
-    done
+
+
+#    fhr=$FHMIN
+#    for fhr in $OUTPUT_FH; do
+#      FH3=$(printf %03i $fhr)
+#      FH2=$(printf %02i $fhr)
+#      atmi=atmf${FH3}.$affix
+#      sfci=sfcf${FH3}.$affix
+#      logi=logf${FH3}
+#      pgbi=GFSPRS.GrbF${FH2}
+#      flxi=GFSFLX.GrbF${FH2}
+#      atmo=$memdir/${CDUMP}.t${cyc}z.atmf${FH3}.$affix
+#      sfco=$memdir/${CDUMP}.t${cyc}z.sfcf${FH3}.$affix
+#      logo=$memdir/${CDUMP}.t${cyc}z.logf${FH3}.txt
+#      pgbo=$memdir/${CDUMP}.t${cyc}z.master.grb2f${FH3}
+#      flxo=$memdir/${CDUMP}.t${cyc}z.sfluxgrbf${FH3}.grib2
+#      eval $NLN $atmo $atmi
+#      eval $NLN $sfco $sfci
+#      eval $NLN $logo $logi
+#      if [ $WRITE_DOPOST = ".true." ]; then
+#        eval $NLN $pgbo $pgbi
+#        eval $NLN $flxo $flxi
+#      fi
+#    done
+
+                fhr=$FHMIN
+                while [ $fhr -le $FHMAX ]; do
+                FH3=$(printf %03i $fhr)
+                        FH2=$(printf %02i $fhr)
+                        atmi=atmf${FH3}.$affix
+                        sfci=sfcf${FH3}.$affix
+                        logi=logf${FH3}
+                        pgbi=GFSPRS.GrbF${FH2}
+                        flxi=GFSFLX.GrbF${FH2}
+                        [[ ! -d $memdir/gfs.$PDY/00/atmos ]] && mkdir -m 775 -p $memdir/gfs.$PDY/00/atmos
+                        atmo=$memdir/gfs.$PDY/00/atmos/ge${mem}.t${cyc}z.atmf${FH3}.$affix
+                        sfco=$memdir/gfs.$PDY/00/atmos/ge${mem}.t${cyc}z.sfcf${FH3}.$affix
+                        logo=$memdir/gfs.$PDY/00/atmos/ge${mem}.t${cyc}z.logf${FH3}.txt
+                        pgbo=$memdir/gfs.$PDY/00/atmos/ge${mem}.t${cyc}z.master.grb2f${FH3}
+                        flxo=$memdir/gfs.$PDY/00/atmos/ge${mem}.t${cyc}z.sfluxgrbf${FH3}.grib2
+                        eval $NLN $atmo $atmi
+                        eval $NLN $sfco $sfci
+                        eval $NLN $logo $logi
+                        if [ $WRITE_DOPOST = ".true." ]; then
+                                eval $NLN $pgbo $pgbi
+                                eval $NLN $flxo $flxi
+                        fi
+                        FHINC=$FHOUT
+                        if [ $FHMAX_HF -gt 0 -a $FHOUT_HF -gt 0 -a $fhr -lt $FHMAX_HF ]; then
+                                FHINC=$FHOUT_HF
+                        fi
+                        fhr=$((fhr+FHINC))
+                done
+
   else
     for n in $(seq 1 $ntiles); do
       eval $NLN nggps2d.tile${n}.nc       $memdir/nggps2d.tile${n}.nc
@@ -737,10 +788,30 @@ MOM6_postdet() {
   OCNRES=${OCNRES:-"025"}
 
   # Copy MOM6 ICs
-  $NCP -pf $ICSDIR/$CDATE/ocn/MOM*nc $DATA/INPUT/
+#  $NCP -pf $ICSDIR/$CDATE/ocn/MOM*nc $DATA/INPUT/
 
   # Copy MOM6 fixed files
-  $NCP -pf $FIXmom/$OCNRES/* $DATA/INPUT/
+#  $NCP -pf $FIXmom/$OCNRES/* $DATA/INPUT/
+memnum=`echo $mem | cut -c2-3`
+        if [ $mem = "c00" ]; then
+        $NCP -pf /gpfs/dell6/emc/modeling/noscrub/Bing.Fu/ep3ic/ocnic/${PDY}00/ORAS5.mx025_L41.ic.nc $DATA/INPUT/MOM6.mx025.ic.nc
+        else
+        $NCP -pf /gpfs/dell6/emc/modeling/noscrub/Bing.Fu/ep3ic/ocnic/${PDY}00/ORAS5.mx025_L41.ic.nc $DATA/INPUT/MOM6.mx025.ic.nc
+        $NCP -pf /gpfs/dell6/emc/modeling/noscrub/Bing.Fu/ep3ic/ocnic/${PDY}00/mem0${memnum}_pert.nc $DATA/INPUT/mom6_increment.nc
+        fi
+
+#        $NCP -pf $COMROOT/gens/dev/gefs.$PDY/00/$mem/FV3ICS/ocn/MOM*nc $DATA/INPUT/
+
+        # Copy new vgrid file to INPUT
+        #$NCP -pf /gpfs/dell6/emc/modeling/noscrub/Bing.Fu/ocn41/2m_mom6_vgrid.nc $DATA/INPUT/
+        $NCP -pf /gpfs/dell6/emc/modeling/noscrub/Xianwu.Xue/cpl_p8/p8ep3/2m_mom6_vgrid.nc $DATA/INPUT/
+
+        # Copy MOM6 fixed files
+        $NCP -pf $FIXmom/$OCNRES/* $DATA/INPUT/
+
+        # Copy coupled grid_spec
+        $NCP -pf $FIX_DIR/fix_cpl/a${CASE}o${OCNRES}/grid_spec.nc $DATA/INPUT/
+
 
   # Copy coupled grid_spec
   spec_file="$FIX_DIR/fix_cpl/a${CASE}o${OCNRES}/grid_spec.nc"
@@ -759,8 +830,10 @@ MOM6_postdet() {
 
   if [ $DO_OCN_SPPT = "YES" -o $DO_OCN_PERT_EPBL = "YES" ]; then
     if [ ${SET_STP_SEED:-"YES"} = "YES" ]; then
-      ISEED_OCNSPPT=$(( (CDATE*1000 + MEMBER*10 + 6) % 2147483647 ))
-      ISEED_EPBL=$(( (CDATE*1000 + MEMBER*10 + 7) % 2147483647 ))
+#      ISEED_OCNSPPT=$(( (CDATE*1000 + MEMBER*10 + 6) % 2147483647 ))
+#      ISEED_EPBL=$(( (CDATE*1000 + MEMBER*10 + 7) % 2147483647 ))
+        ISEED_OCNSPPT=${ISEED_OCNSPPT:-$((CDATE*10000 + ${MEMBER#0}*100 + 8)),$((CDATE*10000 + ${MEMBER#0}*100 + 9)),$((CDATE*10000 + ${MEMBER#0}*100 + 10)),$((CDATE*10000 + ${MEMBER#0}*100 + 11)),$((CDATE*10000 + ${MEMBER#0}*100 + 12))}
+        ISEED_EPBL=${ISEED_EPBL:-$((CDATE*10000 + ${MEMBER#0}*100 + 13)),$((CDATE*10000 + ${MEMBER#0}*100 + 14)),$((CDATE*10000 + ${MEMBER#0}*100 + 15)),$((CDATE*10000 + ${MEMBER#0}*100 + 16)),$((CDATE*10000 + ${MEMBER#0}*100 + 17))}
     else
       ISEED=${ISEED:-0}
     fi
@@ -893,7 +966,8 @@ CICE_postdet() {
   iceic="cice_model.res_$CDATE.nc"
 
   # Copy CICE IC
-  $NCP -p $ICSDIR/$CDATE/ice/cice_model_${ICERESdec}.res_$CDATE.nc $DATA/$iceic
+#  $NCP -p $ICSDIR/$CDATE/ice/cice_model_${ICERESdec}.res_$CDATE.nc $DATA/$iceic
+ $NCP -p $COMROOT/gens/dev/gefs.$PDY/00/$mem/FV3ICS/ice/cice5_model_0.25.res_$CDATE.nc $DATA/$iceic
 
   echo "Link CICE fixed files"
   $NLN -sf $FIXcice/$ICERES/${ice_grid_file} $DATA/

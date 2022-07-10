@@ -9,7 +9,7 @@ while getopts "c" option; do
   case "${option}" in
     c)
       APP="S2SW"
-      CCPP_SUITES="FV3_GFS_v16_coupled_nsstNoahmpUGWPv1,FV3_GFS_v16_coupled_p7_rrtmgp,FV3_GFS_v17_coupled_p8"
+      CCPP_SUITES="FV3_GFS_v17_coupled_p8,FV3_GFS_v17_coupled_p8_rrtmgp"
       ;;
     *)
       echo "Unrecognized option: ${1}"

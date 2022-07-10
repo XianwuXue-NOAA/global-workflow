@@ -11,7 +11,7 @@ MOM6_USE_LI2016=${MOM6_USE_LI2016:-'True'}
 MOM6_THERMO_SPAN=${MOM6_THERMO_SPAN:-'False'}
 MOM6_ALLOW_LANDMASK_CHANGES=${MOM6_ALLOW_LANDMASK_CHANGES:-'False'}
 
-DO_OCN_SPPT=${DO_OCN_SPPT:-'False'}
+OCN_SPPT=${OCN_SPPT:-'False'}
 PERT_EPBL=${PERT_EPBL:-'False'}
 
 MOM_IAU_HRS=${MOM_IAU_HRS:-'3.0'}
@@ -30,7 +30,7 @@ if [ $OCNRES = '025' ]; then
   CHLCLIM="seawifs-clim-1997-2010.${NX_GLB}x${NY_GLB}.v20180328.nc"
   FRUNOFF="runoff.daitren.clim.${NX_GLB}x${NY_GLB}.v20180328.nc"
   MOM6_RIVER_RUNOFF='True'
-  MOM6_RESTART_SETTING="r"
+  MOM6_RESTART_SETTING="n"
 elif [ $OCNRES = '050' ]; then
   NX_GLB=720
   NY_GLB=576
@@ -70,27 +70,27 @@ EOF
 #  new_lscale=.true.
 #EOF
 
-OCN_SPPT="False"
-if [ $DO_OCN_SPPT = "YES" ]; then
-  OCN_SPPT="True"
-  cat >> input.nml <<EOF
-  OCNSPPT=${OCNSPPT:-1.0}
-  OCNSPPT_LSCALE=${OCNSPPT_LSCALE:-500e3}
-  OCNSPPT_TAU=${OCNSPPT_TAU:-21600}
-  ISEED_OCNSPPT=${ISEED_OCNSPPT:-$ISEED}
-EOF
-  fi
-
-PERT_EPBL="False"
-if [ $DO_OCN_PERT_EPBL = "YES" ]; then
-  PERT_EPBL="True"
-  cat >> input.nml <<EOF
-  EPBL=${EPBL:-1.0}
-  EPBL_LSCALE=${EPBL_LSCALE:-500e3}
-  EPBL_TAU=${EPBL_TAU:-21600}
-  ISEED_EPBL=${ISEED_EPBL:-$ISEED}
-EOF
-  fi
+#OCN_SPPT="False"
+#if [ $DO_OCN_SPPT = "YES" ]; then
+#  OCN_SPPT="True"
+#  cat >> input.nml <<EOF
+#  OCNSPPT=${OCNSPPT:-1.0}
+#  OCNSPPT_LSCALE=${OCNSPPT_LSCALE:-500e3}
+#  OCNSPPT_TAU=${OCNSPPT_TAU:-21600}
+#  ISEED_OCNSPPT=${ISEED_OCNSPPT:-$ISEED}
+#EOF
+#  fi
+#
+#PERT_EPBL="False"
+#if [ $DO_OCN_PERT_EPBL = "YES" ]; then
+#  PERT_EPBL="True"
+#  cat >> input.nml <<EOF
+#  EPBL=${EPBL:-1.0}
+#  EPBL_LSCALE=${EPBL_LSCALE:-500e3}
+#  EPBL_TAU=${EPBL_TAU:-21600}
+#  ISEED_EPBL=${ISEED_EPBL:-$ISEED}
+#EOF
+#  fi
 
 #cat >> input.nml <<EOF
 #/
@@ -117,6 +117,7 @@ sed -e "s/@\[DT_THERM_MOM6\]/$DT_THERM_MOM6/g" \
     -e "s/@\[CHLCLIM\]/$CHLCLIM/g" \
     -e "s/@\[DO_OCN_SPPT\]/$OCN_SPPT/g" \
     -e "s/@\[PERT_EPBL\]/$PERT_EPBL/g" \
+    -e "s/@\[MOM6_IAU\]/$MOM6_IAU/g" \
     -e "s/@\[MOM_IAU_HRS\]/$MOM_IAU_HRS/g" $DATA/INPUT/MOM_input_template_$OCNRES > $DATA/INPUT/MOM_input
 rm $DATA/INPUT/MOM_input_template_$OCNRES
 
