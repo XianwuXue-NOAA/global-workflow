@@ -813,7 +813,7 @@ MOM6_postdet() {
 
   # Copy MOM6 ICs
   if [[ $CDUMP == "gefs" ]]; then
-    $NCP -pf $ROTDIR/$CDUMP.$PDY/$cyc/$RUNMEM/ocean/MOM*nc $DATA/INPUT/
+    $NCP -pf $ROTDIR/$CDUMP.$PDY/$cyc/$RUNMEM/ocean/INPUT/MOM*nc $DATA/INPUT/
   else
     $NCP -pf $ICSDIR/$CDATE/ocn/MOM*nc $DATA/INPUT/
   fi
@@ -971,7 +971,7 @@ CICE_postdet() {
 
   # Copy CICE IC
   if [[ $CDUMP == "gefs" ]]; then
-    $NCP -p $ROTDIR/$CDUMP.$PDY/$cyc/$RUNMEM/ice/cice_model_${ICERESdec}.res_$CDATE.nc $DATA/$iceic
+    $NCP -p $ROTDIR/$CDUMP.$PDY/$cyc/$RUNMEM/ice/INPUT/cice_model_${ICERESdec}.res_$CDATE.nc $DATA/$iceic
   else
     $NCP -p $ICSDIR/$CDATE/ice/cice_model_${ICERESdec}.res_$CDATE.nc $DATA/$iceic
   fi

@@ -44,8 +44,8 @@ if [[ $CDUMP == "gefs" ]]; then
     ICSDIR=${ROTDIR}/${CDUMP}.${PDY}/${cyc}/${RUNMEM} #/atmos
     [[ ! -d $ICSDIR ]] && mkdir -p $ICSDIR
     [[ ! -d $ICSDIR/atmos ]] && mkdir -p $ICSDIR/atmos
-    [[ ! -d $ICSDIR/ocean ]] && mkdir -p $ICSDIR/ocean
-    [[ ! -d $ICSDIR/ice ]] && mkdir -p $ICSDIR/ice
+    [[ ! -d $ICSDIR/ocean ]] && mkdir -p $ICSDIR/ocean/INPUT
+    [[ ! -d $ICSDIR/ice ]] && mkdir -p $ICSDIR/ice/INPUT
 else
     [[ ! -d $ICSDIR/$CDATE ]] && mkdir -p $ICSDIR/$CDATE
     [[ ! -d $ICSDIR/$CDATE/atmos ]] && mkdir -p $ICSDIR/$CDATE/atmos
@@ -75,7 +75,7 @@ fi
 
 # Setup Ocean IC files 
 if [[ $CDUMP == "gefs" ]]; then
-    cp -r $BASE_CPLIC/$CPL_OCNIC/$CDATE/ocn/$OCNRES/MOM*.nc  $ICSDIR/ocean/
+    cp -r $BASE_CPLIC/$CPL_OCNIC/$CDATE/ocn/$OCNRES/MOM*.nc  $ICSDIR/ocean/INPUT/
 else
     cp -r $BASE_CPLIC/$CPL_OCNIC/$CDATE/ocn/$OCNRES/MOM*.nc  $ICSDIR/$CDATE/ocn/
 fi
@@ -87,7 +87,7 @@ fi
 
 #Setup Ice IC files
 if [[ $CDUMP == "gefs" ]]; then
-    cp $BASE_CPLIC/$CPL_ICEIC/$CDATE/ice/$ICERES/cice5_model_${ICERESdec}.res_$CDATE.nc $ICSDIR/ice/cice_model_${ICERESdec}.res_$CDATE.nc
+    cp $BASE_CPLIC/$CPL_ICEIC/$CDATE/ice/$ICERES/cice5_model_${ICERESdec}.res_$CDATE.nc $ICSDIR/ice/INPUT/cice_model_${ICERESdec}.res_$CDATE.nc
 else
     cp $BASE_CPLIC/$CPL_ICEIC/$CDATE/ice/$ICERES/cice5_model_${ICERESdec}.res_$CDATE.nc $ICSDIR/$CDATE/ice/cice_model_${ICERESdec}.res_$CDATE.nc
 fi
