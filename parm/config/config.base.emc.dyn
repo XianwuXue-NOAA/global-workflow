@@ -121,18 +121,18 @@ export ATARDIR="@ATARDIR@"
 export envir=${envir:-"prod"}
 export NET=${NET:-"gfs"}
 export RUN=${RUN:-${CDUMP:-"gfs"}}
-export COMIN_OBS=${DMPDIR}/${CDUMP}.${PDY}/$cyc/atmos
-export COMIN_GES_OBS=${DMPDIR}/${CDUMP}.${PDY}/$cyc/atmos
-export COMINatmos=${ROTDIR}/${CDUMP}.${PDY}/${cyc}/atmos
-export COMOUTatmos=${ROTDIR}/${CDUMP}.${PDY}/${cyc}/atmos
-export COMINwave=${ROTDIR}/${CDUMP}.${PDY}/${cyc}/wave
-export COMOUTwave=${ROTDIR}/${CDUMP}.${PDY}/${cyc}/wave
-export COMINocean=${ROTDIR}/${CDUMP}.${PDY}/${cyc}/ocean
-export COMOUTocean=${ROTDIR}/${CDUMP}.${PDY}/${cyc}/ocean
-export COMINice=${ROTDIR}/${CDUMP}.${PDY}/${cyc}/ice
-export COMOUTice=${ROTDIR}/${CDUMP}.${PDY}/${cyc}/ice
-export COMINaero=${ROTDIR}/${CDUMP}.${PDY}/${cyc}/chem
-export COMOUTaero=${ROTDIR}/${CDUMP}.${PDY}/${cyc}/chem
+export COMIN_OBS=${DMPDIR}/${CDUMP}.${PDY}/$cyc/${RUNMEM}/atmos
+export COMIN_GES_OBS=${DMPDIR}/${CDUMP}.${PDY}/$cyc/${RUNMEM}/atmos
+export COMINatmos=${ROTDIR}/${CDUMP}.${PDY}/${cyc}/${RUNMEM}/atmos
+export COMOUTatmos=${ROTDIR}/${CDUMP}.${PDY}/${cyc}/${RUNMEM}/atmos
+export COMINwave=${ROTDIR}/${CDUMP}.${PDY}/${cyc}/${RUNMEM}/wave
+export COMOUTwave=${ROTDIR}/${CDUMP}.${PDY}/${cyc}/${RUNMEM}/wave
+export COMINocean=${ROTDIR}/${CDUMP}.${PDY}/${cyc}/${RUNMEM}/ocean
+export COMOUTocean=${ROTDIR}/${CDUMP}.${PDY}/${cyc}/${RUNMEM}/ocean
+export COMINice=${ROTDIR}/${CDUMP}.${PDY}/${cyc}/${RUNMEM}/ice
+export COMOUTice=${ROTDIR}/${CDUMP}.${PDY}/${cyc}/${RUNMEM}/ice
+export COMINaero=${ROTDIR}/${CDUMP}.${PDY}/${cyc}/${RUNMEM}/chem
+export COMOUTaero=${ROTDIR}/${CDUMP}.${PDY}/${cyc}/${RUNMEM}/chem
 
 export jlogfile="${EXPDIR}/logs/jlogfile"
 export ERRSCRIPT=${ERRSCRIPT:-'eval [[ $err = 0 ]]'}
@@ -301,7 +301,7 @@ export DOIAU_ENKF=${DOIAU:-"YES"}   # Enable 4DIAU for EnKF ensemble
 export IAUFHRS_ENKF="3,6,9"
 export IAU_DELTHRS_ENKF=6
 # Check if cycle is cold starting, DOIAU off, or free-forecast mode
-if [[ "$MODE" = "cycled" && "$SDATE" = "$CDATE" && $EXP_WARM_START = ".false." ]] || [[ "$DOIAU" = "NO" ]] || [[ "$MODE" = "forecast-only" && $EXP_WARM_START = ".false." ]] ; then
+if [[ "$MODE" = "cycled" && "$SDATE" = "$CDATE" && $EXP_WARM_START = ".false." ]] || [[ "$DOIAU" = "NO" ]] || [[ "$MODE" = "forecast-only" && $EXP_WARM_START = ".false." ]] || [[ "$MODE" = "gefs" && $EXP_WARM_START = ".false." ]] ; then
   export IAU_OFFSET=0
   export IAU_FHROT=0
 fi

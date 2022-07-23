@@ -179,9 +179,13 @@ class RocotoXML:
 
         expdir = self._base['EXPDIR']
         pslot = self._base['PSLOT']
+        cdump = self._base['CDUMP']
 
         if xml_file is None:
-            xml_file = f"{expdir}/{pslot}.xml"
+            if cdump in ["gefs"]:
+                xml_file = f"{expdir}/{cdump}.xml"
+            else:
+                xml_file = f"{expdir}/{pslot}.xml"
 
         with open(xml_file, 'w') as fh:
             fh.write(self.xml)
@@ -199,8 +203,12 @@ class RocotoXML:
 
         expdir = self._base['EXPDIR']
         pslot = self._base['PSLOT']
+        cdump = self._base['CDUMP']
 
-        rocotorunstr = f'{rocotoruncmd} -d {expdir}/{pslot}.db -w {expdir}/{pslot}.xml'
+        if cdump in ["gefs"]:
+            rocotorunstr = f'{rocotoruncmd} -d {expdir}/{pslot}.db -w {expdir}/{cdump}.xml'
+        else:
+            rocotorunstr = f'{rocotoruncmd} -d {expdir}/{pslot}.db -w {expdir}/{pslot}.xml'
         cronintstr = f'*/{cronint} * * * *'
 
         try:
@@ -216,7 +224,10 @@ class RocotoXML:
                    '']
 
         if crontab_file is None:
-            crontab_file = f"{expdir}/{pslot}.crontab"
+            if cdump in ["gefs"]:
+                crontab_file = f"{expdir}/{cdump}.crontab"
+            else:
+                crontab_file = f"{expdir}/{pslot}.crontab"
 
         with open(crontab_file, 'w') as fh:
             fh.write('\n'.join(strings))

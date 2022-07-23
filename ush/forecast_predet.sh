@@ -280,17 +280,17 @@ FV3_GFS_predet(){
     memchar=""
   else
     if [[ $CDUMP == "gefs" ]]; then
-        prefix=$CDUMP
-        rprefix=$rCDUMP
-        if [ $MEMBER -eq 0 ]; then
-            memchar=c$(printf %02i $MEMBER)
-        else
-            memchar=p$(printf %02i $MEMBER)
-        fi
+      prefix=$CDUMP
+      rprefix=$rCDUMP
+      if [ $MEMBER -eq 0 ]; then
+        memchar=c$(printf %02i $MEMBER)
+      else
+        memchar=p$(printf %02i $MEMBER)
+      fi
     else
-        prefix=enkf$CDUMP
-        rprefix=enkf$rCDUMP
-        memchar=mem$(printf %03i $MEMBER)
+      prefix=enkf$CDUMP
+      rprefix=enkf$rCDUMP
+      memchar=mem$(printf %03i $MEMBER)
     fi
   fi
   if [[ $CDUMP == "gefs" ]]; then
@@ -339,6 +339,8 @@ WW3_predet(){
   echo "SUB ${FUNCNAME[0]}: Defining variables for WW3"
   if [ $CDUMP = "gdas" ]; then
     export RSTDIR_WAVE=$ROTDIR/${CDUMP}.${PDY}/${cyc}/wave/restart
+  elif [ $CDUMP = "gefs" ]; then
+    export RSTDIR_WAVE=${RSTDIR_WAVE:-$ROTDIR/${CDUMP}.${PDY}/${cyc}/$RUNMEM/wave/restart}
   else
     export RSTDIR_WAVE=${RSTDIR_WAVE:-$ROTDIR/${CDUMP}.${PDY}/${cyc}/wave/restart}
   fi

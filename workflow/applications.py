@@ -112,8 +112,8 @@ class AppConfig:
         if self.do_wave:
             wave_cdump = _base.get('WAVE_CDUMP', 'BOTH').lower()
             if wave_cdump in ['both']:
-                self.wave_cdumps = ['gfs', 'gdas']
-            elif wave_cdump in ['gfs', 'gdas']:
+                self.wave_cdumps = ['gfs', 'gdas', 'gefs']
+            elif wave_cdump in ['gfs', 'gdas', 'gefs']:
                 self.wave_cdumps = [wave_cdump]
 
         self.lobsdiag_forenkf = False

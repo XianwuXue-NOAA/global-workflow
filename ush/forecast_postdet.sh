@@ -641,11 +641,19 @@ WW3_postdet() {
     grdALL=$(printf "%s\n" "${array[@]}" | sort -u | tr '\n' ' ')
 
     for wavGRD in ${grdALL}; do
-      $NCP $ROTDIR/${CDUMP}.${PDY}/${cyc}/wave/rundata/${COMPONENTwave}.mod_def.$wavGRD $DATA/mod_def.$wavGRD
+      if [ $CDUMP = "gefs" ]; then
+        $NCP $ROTDIR/${CDUMP}.${PDY}/${cyc}/$RUNMEM/wave/rundata/${COMPONENTwave}.mod_def.$wavGRD $DATA/mod_def.$wavGRD
+      else
+        $NCP $ROTDIR/${CDUMP}.${PDY}/${cyc}/wave/rundata/${COMPONENTwave}.mod_def.$wavGRD $DATA/mod_def.$wavGRD
+      fi
     done
   else 
     #if shel, only 1 waveGRD which is linked to mod_def.ww3 
-    $NCP $ROTDIR/${CDUMP}.${PDY}/${cyc}/wave/rundata/${COMPONENTwave}.mod_def.$waveGRD $DATA/mod_def.ww3
+    if [ $CDUMP = "gefs" ]; then
+      $NCP $ROTDIR/${CDUMP}.${PDY}/${cyc}/$RUNMEM/wave/rundata/${COMPONENTwave}.mod_def.$waveGRD $DATA/mod_def.ww3
+    else
+      $NCP $ROTDIR/${CDUMP}.${PDY}/${cyc}/wave/rundata/${COMPONENTwave}.mod_def.$waveGRD $DATA/mod_def.ww3
+    fi
   fi
 
 
@@ -661,8 +669,13 @@ WW3_postdet() {
   export WRDATE=$($NDATE -${WAVHCYC} $CDATE)
   export WRPDY=$(echo $WRDATE | cut -c1-8)
   export WRcyc=$(echo $WRDATE | cut -c9-10)
-  export WRDIR=${ROTDIR}/${CDUMPRSTwave}.${WRPDY}/${WRcyc}/wave/restart
-  export RSTDIR_WAVE=$ROTDIR/${CDUMP}.${PDY}/${cyc}/wave/restart
+  if [ $CDUMP = "gefs" ]; then
+    export WRDIR=${ROTDIR}/${CDUMPRSTwave}.${WRPDY}/${WRcyc}/$RUNMEM/wave/restart
+    export RSTDIR_WAVE=$ROTDIR/${CDUMP}.${PDY}/${cyc}/$RUNMEM/wave/restart
+  else
+    export WRDIR=${ROTDIR}/${CDUMPRSTwave}.${WRPDY}/${WRcyc}/wave/restart
+    export RSTDIR_WAVE=$ROTDIR/${CDUMP}.${PDY}/${cyc}/wave/restart
+  fi
   export datwave=$COMOUTwave/rundata
   export wavprfx=${CDUMPwave}${WAV_MEMBER}
 
@@ -799,7 +812,11 @@ MOM6_postdet() {
   OCNRES=${OCNRES:-"025"}
 
   # Copy MOM6 ICs
-  $NCP -pf $ICSDIR/$CDATE/ocn/MOM*nc $DATA/INPUT/
+  if [[ $CDUMP == "gefs" ]]; then
+    $NCP -pf $ROTDIR/$CDUMP.$PDY/$cyc/$RUNMEM/ocean/MOM*nc $DATA/INPUT/
+  else
+    $NCP -pf $ICSDIR/$CDATE/ocn/MOM*nc $DATA/INPUT/
+  fi
 
   # Copy MOM6 fixed files
   $NCP -pf $FIXmom/$OCNRES/* $DATA/INPUT/
@@ -815,8 +832,13 @@ MOM6_postdet() {
 
   # Copy mediator restart files to RUNDIR
   if [ $warm_start = ".true." -o $RERUN = "YES" ]; then
-    $NCP $ROTDIR/$CDUMP.$PDY/$cyc/med/ufs.cpld*.nc $DATA/
-    $NCP $ROTDIR/$CDUMP.$PDY/$cyc/med/rpointer.cpl $DATA/
+    if [[ $CDUMP == "gefs" ]]; then
+      $NCP $ROTDIR/$CDUMP.$PDY/$cyc/$RUNMEM/med/ufs.cpld*.nc $DATA/
+      $NCP $ROTDIR/$CDUMP.$PDY/$cyc/$RUNMEM/med/rpointer.cpl $DATA/
+    else
+      $NCP $ROTDIR/$CDUMP.$PDY/$cyc/med/ufs.cpld*.nc $DATA/
+      $NCP $ROTDIR/$CDUMP.$PDY/$cyc/med/rpointer.cpl $DATA/
+    fi
   fi
 
   if [ $DO_OCN_SPPT = "YES" -o $DO_OCN_PERT_EPBL = "YES" ]; then
@@ -948,7 +970,11 @@ CICE_postdet() {
   iceic="cice_model.res_$CDATE.nc"
 
   # Copy CICE IC
-  $NCP -p $ICSDIR/$CDATE/ice/cice_model_${ICERESdec}.res_$CDATE.nc $DATA/$iceic
+  if [[ $CDUMP == "gefs" ]]; then
+    $NCP -p $ROTDIR/$CDUMP.$PDY/$cyc/$RUNMEM/ice/cice_model_${ICERESdec}.res_$CDATE.nc $DATA/$iceic
+  else
+    $NCP -p $ICSDIR/$CDATE/ice/cice_model_${ICERESdec}.res_$CDATE.nc $DATA/$iceic
+  fi
 
   echo "Link CICE fixed files"
   $NLN -sf $FIXcice/$ICERES/${ice_grid_file} $DATA/

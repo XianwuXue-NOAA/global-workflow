@@ -142,7 +142,10 @@ class Tasks:
 
         # Atm ICs
         atm_res = self._base.get('CASE', 'C384')
-        prefix = f"{cpl_ic['BASE_CPLIC']}/{cpl_ic['CPL_ATMIC']}/@Y@m@d@H/{self.cdump}"
+        if self.cdump == "gefs":
+            prefix = f"{cpl_ic['BASE_CPLIC']}/{cpl_ic['CPL_ATMIC']}/@Y@m@d@H/gfs"
+        else:
+            prefix = f"{cpl_ic['BASE_CPLIC']}/{cpl_ic['CPL_ATMIC']}/@Y@m@d@H/{self.cdump}"
         for file in ['gfs_ctrl.nc'] + \
                     [f'{datatype}_data.tile{tile}.nc'
                      for datatype in ['gfs', 'sfc']
@@ -180,7 +183,11 @@ class Tasks:
         dependencies = rocoto.create_dependency(dep_condition='and', dep=deps)
 
         resources = self.get_resource('coupled_ic')
-        task = create_wf_task('coupled_ic', resources, cdump=self.cdump, envar=self.envars, dependency=dependencies)
+        if self.cdump in ["gefs"]:
+            task = create_wf_task('coupled_ic', resources, cdump=self.cdump, envar=self.envars, dependency=dependencies,
+                                  metatask='coupled_ic', varname="member", varval="&MEMLIST;")
+        else:
+            task = create_wf_task('coupled_ic', resources, cdump=self.cdump, envar=self.envars, dependency=dependencies)
 
         return task
 
@@ -288,14 +295,21 @@ class Tasks:
             deps.append(rocoto.add_dependency(dep_dict))
             dependencies = rocoto.create_dependency(dep_condition='or', dep=deps)
 
-        task = create_wf_task('waveinit', resources, cdump=self.cdump, envar=self.envars, dependency=dependencies)
+        if self.cdump == "gefs":
+            task = create_wf_task('waveinit', resources, cdump=self.cdump, envar=self.envars, dependency=dependencies,
+                                  metatask='waveinit', varname="member", varval="&MEMLIST;")
+        else:
+            task = create_wf_task('waveinit', resources, cdump=self.cdump, envar=self.envars, dependency=dependencies)
 
         return task
 
     def waveprep(self):
 
         deps = []
-        dep_dict = {'type': 'task', 'name': f'{self.cdump}waveinit'}
+        if self.cdump == "gefs":
+            dep_dict = {'type': 'metatask', 'name': f'{self.cdump}waveinit'}
+        else:
+            dep_dict = {'type': 'task', 'name': f'{self.cdump}waveinit'}
         deps.append(rocoto.add_dependency(dep_dict))
         dependencies = rocoto.create_dependency(dep=deps)
 
@@ -513,17 +527,28 @@ class Tasks:
             dep_dict = {'type': 'data', 'data': data, 'offset': offset}
             deps.append(rocoto.add_dependency(dep_dict))
         dependencies.append(rocoto.create_dependency(dep_condition='or', dep=deps))
-
+        print(self.app_config.do_wave,self.cdump,self.app_config.wave_cdumps, self.app_config.model_app)
         deps = []
-        if self.cdump in ["gefs"]:
-            dep_dict = {'type': 'metatask', 'name': f'{self.cdump}getic'}
-        else:
-            dep_dict = {'type': 'task', 'name': f'{self.cdump}getic'}
-        dependencies.append(rocoto.add_dependency(dep_dict))
+        if self.app_config.model_app in ['ATM']:
+            if self.cdump in ["gefs"]:
+                dep_dict = {'type': 'metatask', 'name': f'{self.cdump}getic'}
+            else:
+                dep_dict = {'type': 'task', 'name': f'{self.cdump}getic'}
+            dependencies.append(rocoto.add_dependency(dep_dict))
+        if 'S2S' in self.app_config.model_app:
+            if self.cdump in ["gefs"]:
+                dep_dict = {'type': 'metatask', 'name': f'{self.cdump}coupled_ic'}
+            else:
+                dep_dict = {'type': 'task', 'name': f'{self.cdump}coupled_ic'}
+            dependencies.append(rocoto.add_dependency(dep_dict))
+            
 
         if self.app_config.do_wave and self.cdump in self.app_config.wave_cdumps:
             wave_job = 'waveprep' if self.app_config.model_app in ['ATMW'] else 'waveinit'
-            dep_dict = {'type': 'task', 'name': f'{self.cdump}{wave_job}'}
+            if self.cdump in ["gefs"]:
+                dep_dict = {'type': 'metatask', 'name': f'{self.cdump}{wave_job}'}
+            else:
+                dep_dict = {'type': 'task', 'name': f'{self.cdump}{wave_job}'}
             dependencies.append(rocoto.add_dependency(dep_dict))
 
         if self.app_config.do_aero:
