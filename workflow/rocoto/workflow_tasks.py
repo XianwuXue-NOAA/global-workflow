@@ -527,7 +527,7 @@ class Tasks:
             dep_dict = {'type': 'data', 'data': data, 'offset': offset}
             deps.append(rocoto.add_dependency(dep_dict))
         dependencies.append(rocoto.create_dependency(dep_condition='or', dep=deps))
-        print(self.app_config.do_wave,self.cdump,self.app_config.wave_cdumps, self.app_config.model_app)
+
         deps = []
         if self.app_config.model_app in ['ATM']:
             if self.cdump in ["gefs"]:
