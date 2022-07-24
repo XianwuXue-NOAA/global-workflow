@@ -310,8 +310,13 @@ EOF
   # inline post fix files
   if [ $WRITE_DOPOST = ".true." ]; then
     $NLN $PARM_POST/post_tag_gfs${LEVS}             $DATA/itag
-    $NLN $PARM_POST/postxconfig-NT-GFS-TWO.txt      $DATA/postxconfig-NT.txt
-    $NLN $PARM_POST/postxconfig-NT-GFS-F00-TWO.txt  $DATA/postxconfig-NT_FH00.txt
+    if [[ $CDUMP == "gefs" ]]; then
+      $NLN $PARM_POST/postxconfig-NT-GEFS.txt         $DATA/postxconfig-NT.txt
+      $NLN $PARM_POST/postxconfig-NT-GEFS-F00.txt     $DATA/postxconfig-NT_FH00.txt
+    else
+      $NLN $PARM_POST/postxconfig-NT-GFS-TWO.txt      $DATA/postxconfig-NT.txt
+      $NLN $PARM_POST/postxconfig-NT-GFS-F00-TWO.txt  $DATA/postxconfig-NT_FH00.txt
+    fi
     $NLN $PARM_POST/params_grib2_tbl_new            $DATA/params_grib2_tbl_new
   fi
 
