@@ -527,11 +527,21 @@ EOF
       logi=logf${FH3}
       pgbi=GFSPRS.GrbF${FH2}
       flxi=GFSFLX.GrbF${FH2}
-      atmo=$memdir/${CDUMP}.t${cyc}z.atmf${FH3}.$affix
-      sfco=$memdir/${CDUMP}.t${cyc}z.sfcf${FH3}.$affix
-      logo=$memdir/${CDUMP}.t${cyc}z.logf${FH3}.txt
-      pgbo=$memdir/${CDUMP}.t${cyc}z.master.grb2f${FH3}
-      flxo=$memdir/${CDUMP}.t${cyc}z.sfluxgrbf${FH3}.grib2
+      if [ $CDUMP == "gefs" ]; then
+        mkdir -p $memdir/sfcsig
+        mkdir -p $memdir/master
+        atmo=$memdir/sfcsig/${CDUMP}.t${cyc}z.atmf${FH3}.$affix
+        sfco=$memdir/sfcsig/${CDUMP}.t${cyc}z.sfcf${FH3}.$affix
+        logo=$memdir/sfcsig/${CDUMP}.t${cyc}z.logf${FH3}.txt
+        pgbo=$memdir/master/${CDUMP}.t${cyc}z.master.grb2f${FH3}
+        flxo=$memdir/master/${CDUMP}.t${cyc}z.sfluxgrbf${FH3}.grib2
+      else
+        atmo=$memdir/${CDUMP}.t${cyc}z.atmf${FH3}.$affix
+        sfco=$memdir/${CDUMP}.t${cyc}z.sfcf${FH3}.$affix
+        logo=$memdir/${CDUMP}.t${cyc}z.logf${FH3}.txt
+        pgbo=$memdir/${CDUMP}.t${cyc}z.master.grb2f${FH3}
+        flxo=$memdir/${CDUMP}.t${cyc}z.sfluxgrbf${FH3}.grib2
+      fi
       eval $NLN $atmo $atmi
       eval $NLN $sfco $sfci
       eval $NLN $logo $logi
