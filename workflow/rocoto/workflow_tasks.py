@@ -627,10 +627,17 @@ class Tasks:
             return grp, dep, lst
 
         deps = []
-        data = f'&ROTDIR;/{self.cdump}.@Y@m@d/@H/atmos/{self.cdump}.t@Hz.log#dep#.txt'
-        dep_dict = {'type': 'data', 'data': data}
-        deps.append(rocoto.add_dependency(dep_dict))
-        dep_dict = {'type': 'task', 'name': f'{self.cdump}fcst'}
+        if self.cdump == 'gefs':
+            data = f'&ROTDIR;/{self.cdump}.@Y@m@d/@H/#member#/atmos/sfcsig/{self.cdump}.t@Hz.logf000.txt'
+            pass
+        else:
+            data = f'&ROTDIR;/{self.cdump}.@Y@m@d/@H/atmos/{self.cdump}.t@Hz.log#dep#.txt'
+            dep_dict = {'type': 'data', 'data': data}
+            deps.append(rocoto.add_dependency(dep_dict))
+        if self.cdump == 'gefs':
+            dep_dict = {'type': 'metatask', 'name': f'{self.cdump}fcst'}
+        else:
+            dep_dict = {'type': 'task', 'name': f'{self.cdump}fcst'}
         deps.append(rocoto.add_dependency(dep_dict))
         dependencies = rocoto.create_dependency(dep_condition='or', dep=deps)
 
@@ -640,13 +647,16 @@ class Tasks:
                           'ROTDIR': self._base.get('ROTDIR')}
         for key, value in postenvar_dict.items():
             postenvars.append(rocoto.create_envar(name=key, value=str(value)))
-
         varname1, varname2, varname3 = 'grp', 'dep', 'lst'
         varval1, varval2, varval3 = _get_postgroups(self.cdump, self._configs[task_name], add_anl=add_anl_to_post)
         vardict = {varname2: varval2, varname3: varval3}
 
         resources = self.get_resource(task_name)
-        task = create_wf_task(task_name, resources, cdump=self.cdump, envar=postenvars, dependency=dependencies,
+        if self.cdump == 'gefs':
+            task = create_wf_task(task_name, resources, cdump=self.cdump, envar=self.envars, dependency=dependencies,
+                                  metatask=task_name, varname="member", varval="&MEMLIST;")
+        else:
+            task = create_wf_task(task_name, resources, cdump=self.cdump, envar=postenvars, dependency=dependencies,
                               metatask=task_name, varname=varname1, varval=varval1, vardict=vardict)
 
         return task

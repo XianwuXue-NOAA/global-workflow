@@ -255,7 +255,7 @@ class AppConfig:
         Returns the config_files that are involved in the forecast-only app
         """
 
-        configs = ['fcst'] #, 'post', 'vrfy', 'arch']
+        configs = ['fcst', 'post', 'vrfy', 'arch']
 
         if self.model_app in ['S2S', 'S2SW', 'S2SWA']:
             configs += ['coupled_ic']
@@ -540,12 +540,14 @@ class AppConfig:
 
         tasks += ['fcst']
 
-        return {f"{self._base['CDUMP']}": tasks}
+        #return {f"{self._base['CDUMP']}": tasks}
 
         # Skip below statements for GEFS workflow until we decide to add them in the future
         tasks += ['post']
         if 'S2S' in self.model_app:
             tasks += ['ocnpost']
+
+        return {f"{self._base['CDUMP']}": tasks}
 
         tasks += ['vrfy']
         if self.do_metp:
