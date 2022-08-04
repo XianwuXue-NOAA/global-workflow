@@ -79,6 +79,8 @@ fi
 
 cd $jobdir
 
+export SLEEP_TIME=1800
+export SLEEP_INT=5
 SLEEP_LOOP_MAX=$(($SLEEP_TIME / $SLEEP_INT))
 
 for hour in $hours; do
@@ -236,7 +238,7 @@ for hour in $hours; do
 		export makepgrb2b="no"
 	else 
 		export mafile=$COMIN/$COMPONENT/master/gefs.$cycle.master.grb2f$fhr #$RUNMEM.$cycle.master.grb2f$fhr
-		export mifile=$COMIN/$COMPONENT/master/gefs.$cycle.master.grb2if$fhr #$RUNMEM.$cycle.master.grb2if$fhr
+		export mifile=$COMIN/$COMPONENT/master/gefs.$cycle.master.grb2f$fhr #$RUNMEM.$cycle.master.grb2if$fhr
 		export mcfile=$COMIN/$COMPONENT/sfcsig/gefs.$cycle.logf${fhr}.txt #$RUNMEM.$cycle.master.control.f$fhr
 		if [[ -z "$pgbd" ]]; then
 			export makepgrb2b="no"
@@ -288,13 +290,13 @@ for hour in $hours; do
 				teststring=$(cat $mcfile|head -1)
 				if [[ $teststring != '' ]]; then
 					if [[ -f $mifile ]]; then
-						testfhr=$(echo $teststring | cut -c11-13)
+						testfhr=$fhr #$(echo $teststring | cut -c24-25) #c39-40) #c11-13)
 					fi
 				fi # [[ $teststring != '' ]]
 			fi # [[ -f $mcfile ]]
 			echo "testfhr=$testfhr fhr=$fhr"
 
-			if (( testfhr >= fhr )); then
+			if (( $((10#$testfhr)) >= $((10#$fhr)) )); then
 				found="yes"
 				break
 			fi # (( testfhr >= fhr ))

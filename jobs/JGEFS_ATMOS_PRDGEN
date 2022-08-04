@@ -2,14 +2,14 @@
 
 source "$HOMEgfs/ush/preamble.sh"
 
-echo "$(date -u) begin ${BASH_SOURCE[1]}"
+echo "$(date -u) begin ${BASH_SOURCE}"
 
 set -xa
 if [[ ${STRICT:-NO} == "YES" ]]; then
 	# Turn on strict bash error checking
 	set -eu
 fi
-export PS4='$SECONDS + $(basename ${.sh.file})[$LINENO] '
+export PS4='$SECONDS + $(basename ${BASH_SOURCE})[$LINENO] '
 
 #############################
 # Source relevant config files
@@ -27,7 +27,8 @@ done
 # Determine Job Output Name on System
 ####################################
 export pid=${pid:-$$}
-export PBS_JOBID=${jobid}
+export job="gefs_prdgen"
+export PBS_JOBID=${jobid:-${pid}}
 export jobid=${jobid:-"$job.$PBS_JOBID"}
 export pgmout="OUTPUT.${PBS_JOBID}"
 export pgmerr=errfile
@@ -44,7 +45,12 @@ cd $DATA
 ######################################
 export total_tasks=${total_tasks:-4}
 #export APRUN_MPMD=${gefsmpexec_mpmd:-"mpiexec -n $total_tasks cfp mpmd_cmdfile"}
+export gefsmpexec_mpmd="srun -n $total_tasks /scratch2/NCEPDEV/ensemble/noscrub/common/soft/mpiserial.cd/mpiserial"
 export APRUN_MPMD=${gefsmpexec_mpmd:-"mpiexec --cpu-bind core --configfile mpmd_cmdfile"}
+
+# The following options are fore re-forecast
+export save_pgrb2_p5=${save_pgrb2_p5:-NO} 
+export save_pgrb2_p25=${save_pgrb2_p25:-NO}
 
 ####################################
 # Specify NET and RUN Name and model
@@ -59,6 +65,8 @@ export RUN=${RUN:-gefs}
 # SENDECF  - Flag Events on ECF
 # VERBOSE  - Specify Verbose Output
 ######################################
+
+export SENDCOM=YES
 export SENDCOM=${SENDCOM:-YES}
 export SENDDBN=${SENDDBN:-YES}
 export SENDECF=${SENDECF:-YES}
@@ -97,16 +105,16 @@ export PARMgefs=${PARMgefs:-$HOMEgefs/parm}
 #############################
 # Source relevant config files
 #############################
-configs="gefs gefs_prdgen"
-config_path=$PARMgefs
-for config in $configs; do
-    . $config_path/$config.parm
-    export err=$?
-    if [[ $err != 0 ]]; then
-        echo "FATAL ERROR in ${.sh.file}: Error while loading parm file $config_path/$config.parm"
-        exit $err
-    fi
-done
+#configs="gefs gefs_prdgen"
+#config_path=$PARMgefs
+#for config in $configs; do
+#    . $config_path/$config.parm
+#    export err=$?
+#    if [[ $err != 0 ]]; then
+#        echo "FATAL ERROR in ${.sh.file}: Error while loading parm file $config_path/$config.parm"
+#        exit $err
+#    fi
+#done
 
 #export COMINgfs=${COMINgfs:-$(compath.py $envir/com/gfs/${gfs_ver})/gfs.${PDY}/$cyc/atmos}
 
@@ -128,7 +136,7 @@ export err=$?
 if [[ $err == 0 ]]; then
     echo "$job completed normally!"
 else
-    echo "FATAL ERROR in ${.sh.file}: $job failed!"
+    echo "FATAL ERROR in ${BASH_SOURCE}: $job failed!"
     exit $err
 fi
 #############################################################
@@ -139,6 +147,6 @@ fi
 cd $DATAROOT
 if [ ${KEEPDATA:-NO} = NO ] ; then rm -rf $DATA ; fi
 
-echo "$(date -u) end ${.sh.file}"
+echo "$(date -u) end ${BASH_SOURCE}"
 
 exit $err

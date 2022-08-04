@@ -1,6 +1,6 @@
 #! /usr/bin/env bash
 
-echo "$(date -u) begin ${BASH_SOURCE}"
+echo "$(date -u) begin ${BASH_SOURCE[1]}"
 
 set -xa
 if [[ ${STRICT:-NO} == "YES" ]]; then
@@ -27,9 +27,6 @@ export SLEEP_TIME=1800
 export SLEEP_INT=5
 
 export PRDGEN_STREAMS="res_2p50 res_0p50 res_0p25_s1 res_0p25_s2"
-export fhmax=${FHMAX:-${fhmax}}
-export FORECAST_SEGMENT=hr
-
 echo "PRDGEN_STREAMS = $PRDGEN_STREAMS"
 
 # 20150622 RLW change to "yes" to remake prdgen when post is remade
@@ -69,7 +66,7 @@ esac # $FORECAST_SEGMENT in
 #	for var in PRDGEN_GRID PRDGEN_GRID_SPEC PRDGEN_HOURS PRDGEN_SUBMC PRDGEN_A_DIR PRDGEN_A_PREFIX PRDGEN_A_LIST_F00 PRDGEN_A_LIST_FHH; do
 #		pointer="$var[$stream]"
 #		if [[ -z ${!pointer} ]]; then
-#			echo "FATAL ERROR in ${BASH_SOURCE}: $var not defined for $stream"
+#			echo "FATAL ERROR in ${BASH_SOURCE[1]}: $var not defined for $stream"
 #			exit -1
 #		fi
 #	done
@@ -129,7 +126,7 @@ for stream in ${PRDGEN_STREAMS}; do
         res_0p50)
             PRDGEN_GRID="0p5"
             PRDGEN_GRID_SPEC="latlon 0:720:0.5 90:361:-0.5"
-            PRDGEN_HOURS="${fhrlst}" #"{0..${FHMAXHF}..${FHOUTHF}} {$(( $FHMAXHF + ${FHOUTLF} ))..${fhmax}..${FHOUTLF}}"}
+            PRDGEN_HOURS="${fhrlst}" "{0..${FHMAXHF}..${FHOUTHF}} {$(( $FHMAXHF + ${FHOUTLF} ))..${fhmax}..${FHOUTLF}}"}
             PRDGEN_SUBMC="prd0p5"
             PRDGEN_A_DIR="pgrb2ap5"
             PRDGEN_A_PREFIX="pgrb2a.0p50."
@@ -211,22 +208,17 @@ export MP_PGMMODEL=mpmd
 rm -f mpmd_cmdfile
 ln -s $MP_CMDFILE mpmd_cmdfile
 
-# for mpmd on hera
-rm -f cmdfile
-ln -s $MP_CMDFILE cmdfile
-
 #############################################################
 # Execute the script
-#$APRUN_MPMD
-./mpmd_cmdfile
+$APRUN_MPMD
 export err=$?
 
 if [[ $err != 0 ]]; then
-	echo "FATAL ERROR in ${BASH_SOURCE}: One or more prdgen streams in $MP_CMDFILE failed!"
+	echo "FATAL ERROR in ${BASH_SOURCE[1]}: One or more prdgen streams in $MP_CMDFILE failed!"
 	exit $err
 fi
 #############################################################
 
-echo "$(date -u) end ${BASH_SOURCE}"
+echo "$(date -u) end ${BASH_SOURCE[1]}"
 
 #exit $err

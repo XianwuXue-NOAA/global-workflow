@@ -315,6 +315,10 @@ elif [ $step = "post" ]; then
     export nth_post=1
     export npe_node_post=12
     export npe_node_dwn=$npe_node_max
+    if [[ $CDUMP == "gefs" ]]; then
+        export npe_post=48
+        export npe_node_post=12
+    fi
 
 elif [ $step = "wafs" ]; then
 
