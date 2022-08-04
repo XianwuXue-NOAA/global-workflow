@@ -206,7 +206,7 @@ class RocotoXML:
         cdump = self._base['CDUMP']
 
         if cdump in ["gefs"]:
-            rocotorunstr = f'{rocotoruncmd} -d {expdir}/{pslot}.db -w {expdir}/{cdump}.xml'
+            rocotorunstr = f'{rocotoruncmd} -d {expdir}/{cdump}.db -w {expdir}/{cdump}.xml'
         else:
             rocotorunstr = f'{rocotoruncmd} -d {expdir}/{pslot}.db -w {expdir}/{pslot}.xml'
         cronintstr = f'*/{cronint} * * * *'
