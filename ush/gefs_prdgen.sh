@@ -21,14 +21,14 @@
 # -----------------------------------------------------
 #####################################################################
 
-echo "$(date -u) begin ${BASH_SOURCE[1]}"
+echo "$(date -u) begin ${BASH_SOURCE}"
 
 set -xa
 
 export ENSADD=${ENSADD:-$USHgefs/global_ensadd.sh}
 
 cat <<-EOF
-	Settings for ${BASH_SOURCE[1]}:
+	Settings for ${BASH_SOURCE}:
 	  RUNMEM: $RUNMEM
 	  DATA: $DATA
 
@@ -76,7 +76,7 @@ else
 			-new_grid $grid_spec pgb2file.$ffhr
 	export err=$?
 	if [[ $err -ne 0 ]]; then
-		echo "FATAL ERROR in ${BASH_SOURCE[1]} ($stream): wgrib2 for $mafile failed!"
+		echo "FATAL ERROR in ${BASH_SOURCE} ($stream): wgrib2 for $mafile failed!"
 		export err=1
 		err_chk || exit $err
 	fi
@@ -155,7 +155,7 @@ else
 		mv pgb2afile.$ffhr $fileaout
 		testfile=$fileaout
 		if [[ ! -s $testfile ]]; then
-			echo "FATAL ERROR in ${BASH_SOURCE[1]} ($stream): $testfile WAS NOT WRITTEN"
+			echo "FATAL ERROR in ${BASH_SOURCE} ($stream): $testfile WAS NOT WRITTEN"
 			export err=1
 			err_chk || exit $err
 		fi # [[ ! -s $testfile ]]
@@ -164,7 +164,7 @@ else
 			mv pgb2afile.$ffhr.idx $fileaouti
 			testfile=$fileaouti
 			if [[ ! -s $testfile ]]; then
-				echo "FATAL ERROR in ${BASH_SOURCE[1]} ($stream): $testfile WAS NOT WRITTEN"
+				echo "FATAL ERROR in ${BASH_SOURCE} ($stream): $testfile WAS NOT WRITTEN"
 				export err=1
 				err_chk || exit $err
 			fi # [[ ! -s $testfile ]]
@@ -174,7 +174,7 @@ else
 			mv pgb2bfile.$ffhr $filebout
 			testfile=$filebout
 			if [[ ! -s $testfile ]]; then
-				echo "FATAL ERROR in ${BASH_SOURCE[1]} ($stream): $testfile WAS NOT WRITTEN"
+				echo "FATAL ERROR in ${BASH_SOURCE} ($stream): $testfile WAS NOT WRITTEN"
 				export err=1
 				err_chk || exit $err
 			fi # [[ ! -s $testfile ]]
@@ -183,7 +183,7 @@ else
 				mv pgb2bfile.$ffhr.idx $filebouti
 				testfile=$filebouti
 				if [[ ! -s $testfile ]]; then
-					echo "FATAL ERROR in ${BASH_SOURCE[1]} ($stream): $testfile WAS NOT WRITTEN"
+					echo "FATAL ERROR in ${BASH_SOURCE} ($stream): $testfile WAS NOT WRITTEN"
 					export err=1
 					err_chk || exit $err
 				fi # [[ ! -s $testfile ]]
@@ -217,7 +217,7 @@ else
 	echo $(date) pgrb2a $jobgrid sendcom $ffhr completed
 fi # [[ -s $DATA/pgrb2$ffhr ]] && [[ $overwrite = no ]]
 
-echo "$(date -u) end ${BASH_SOURCE[1]}"
+echo "$(date -u) end ${BASH_SOURCE}"
 
 exit 0
 

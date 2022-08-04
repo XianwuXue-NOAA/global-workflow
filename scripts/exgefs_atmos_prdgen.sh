@@ -1,6 +1,6 @@
 #! /usr/bin/env bash
 
-echo "$(date -u) begin ${BASH_SOURCE[1]}"
+echo "$(date -u) begin ${BASH_SOURCE}"
 
 set -xa
 if [[ ${STRICT:-NO} == "YES" ]]; then
@@ -27,6 +27,8 @@ export SLEEP_TIME=1800
 export SLEEP_INT=5
 
 export PRDGEN_STREAMS="res_2p50 res_0p50 res_0p25_s1 res_0p25_s2"
+export fhmax=${FHMAX:-${fhmax}}
+
 echo "PRDGEN_STREAMS = $PRDGEN_STREAMS"
 
 # 20150622 RLW change to "yes" to remake prdgen when post is remade
@@ -66,7 +68,7 @@ esac # $FORECAST_SEGMENT in
 #	for var in PRDGEN_GRID PRDGEN_GRID_SPEC PRDGEN_HOURS PRDGEN_SUBMC PRDGEN_A_DIR PRDGEN_A_PREFIX PRDGEN_A_LIST_F00 PRDGEN_A_LIST_FHH; do
 #		pointer="$var[$stream]"
 #		if [[ -z ${!pointer} ]]; then
-#			echo "FATAL ERROR in ${BASH_SOURCE[1]}: $var not defined for $stream"
+#			echo "FATAL ERROR in ${BASH_SOURCE}: $var not defined for $stream"
 #			exit -1
 #		fi
 #	done
@@ -214,11 +216,11 @@ $APRUN_MPMD
 export err=$?
 
 if [[ $err != 0 ]]; then
-	echo "FATAL ERROR in ${BASH_SOURCE[1]}: One or more prdgen streams in $MP_CMDFILE failed!"
+	echo "FATAL ERROR in ${BASH_SOURCE}: One or more prdgen streams in $MP_CMDFILE failed!"
 	exit $err
 fi
 #############################################################
 
-echo "$(date -u) end ${BASH_SOURCE[1]}"
+echo "$(date -u) end ${BASH_SOURCE}"
 
 #exit $err
