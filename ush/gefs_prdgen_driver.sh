@@ -1,4 +1,4 @@
-#!/bin/ksh
+#! /usr/bin/env bash
 
 #####################################################################
 # ----------------------------------------------------
@@ -15,7 +15,7 @@
 # ----------------------------------------------------
 #####################################################################
 
-echo "$(date -u) begin ${.sh.file}"
+echo "$(date -u) begin ${BASH_SOURCE[1]}"
 export PS4="${PS4}${1}: "
 
 set -xa
@@ -25,7 +25,7 @@ if [[ ${STRICT:-NO} == "YES" ]]; then
 fi
 
 export VERBOSE=yes
-sname=$(basename ${.sh.file})
+sname=$(basename ${BASH_SOURCE[1]})
 
 export stream="${1}"
 export jobdir="${2}"                   # ${DATA}/${stream}
@@ -33,23 +33,8 @@ export infile="${3}"                   # ${DATA}/${stream}/${stream}.in
 
 . ${infile}
 
-# Input file:
-# jobgrid=                  # PRDGEN_GRID[$stream]
-# grid_spec=                # PRDGEN_GRID_SPEC[$stream]
-# hours=                    # PRDGEN_HOURS[$stream]
-# submc=                    # PRDGEN_SUBMC[$stream]
-# pgad=                     # PRDGEN_A_DIR[$stream]
-# pgapre=                   # PRDGEN_A_PREFIX[$stream]
-# parmlist_a00=             # PRDGEN_A_LIST_F00[$stream]
-# parmlist_ahh=             # PRDGEN_A_LIST_FHH[$stream]
-# pgbd=                     # PRDGEN_B_DIR[$stream]
-# pgbpre=                   # PRDGEN_B_PREFIX[$stream]
-# parmlist_b00=             # PRDGEN_B_LIST_F00[$stream]
-# parmlist_bhh=             # PRDGEN_B_LIST_FHH[$stream]
-# do_analysis=              # PRDGEN_DO_ANALYSIS[$stream]
-
 cat <<-EOF
-	Settings for $(basename ${.sh.file}) stream $stream:
+	Settings for $(basename ${BASH_SOURCE[1]}) stream $stream:
 	  RUNMEM: $RUNMEM
 	  cyc: $cyc
 	  DATA: $DATA
@@ -171,7 +156,7 @@ for hour in $hours; do
 				fi
 				sDate=$(date)
 				cat <<-EOF
-					FATAL ERROR in ${.sh.file} ($stream): Post data still missing for analysis at $sDate after waiting ${SLEEP_TIME}s.
+					FATAL ERROR in ${BASH_SOURCE[1]} ($stream): Post data still missing for analysis at $sDate after waiting ${SLEEP_TIME}s.
 						Looked for the following files:
 							$(set +x; if [[ $RUNMEM != "gegfs" ]]; then Control file: $mcfile $(if [[ -f $mcfile ]]; then echo "exists"; else; echo "doesn't exist"; fi); fi)
 							Grib file:    $mafile $(set +x; if [[ -f $mafile ]]; then echo "exists"; else; echo "doesn't exist"; fi)
@@ -216,7 +201,7 @@ for hour in $hours; do
 			# Check for error
 			export err=$?
 			if [[ $err != 0 ]]; then
-				echo "FATAL ERROR in ${.sh.file} ($stream): Creation of product failed for analysis!"
+				echo "FATAL ERROR in ${BASH_SOURCE[1]} ($stream): Creation of product failed for analysis!"
 				err_chk
 				exit $err
 			fi
@@ -250,9 +235,9 @@ for hour in $hours; do
 		export mcfile=""
 		export makepgrb2b="no"
 	else 
-		export mafile=$COMIN/$COMPONENT/master/$RUNMEM.$cycle.master.grb2f$fhr
-		export mifile=$COMIN/$COMPONENT/master/$RUNMEM.$cycle.master.grb2if$fhr
-		export mcfile=$COMIN/$COMPONENT/misc/post/$RUNMEM.$cycle.master.control.f$fhr
+		export mafile=$COMIN/$COMPONENT/master/gefs.$cycle.master.grb2f$fhr #$RUNMEM.$cycle.master.grb2f$fhr
+		export mifile=$COMIN/$COMPONENT/master/gefs.$cycle.master.grb2if$fhr #$RUNMEM.$cycle.master.grb2if$fhr
+		export mcfile=$COMIN/$COMPONENT/sfcsig/gefs.$cycle.logf${fhr}.txt #$RUNMEM.$cycle.master.control.f$fhr
 		if [[ -z "$pgbd" ]]; then
 			export makepgrb2b="no"
 		else
@@ -261,15 +246,15 @@ for hour in $hours; do
 	fi # [[ $RUNMEM = "gegfs" ]]
 
 	if [[ $SENDCOM == "YES" ]]; then
-		export pcfile=$COMOUT/$COMPONENT/misc/$submc/${RUNMEM}.t${cyc}z.prdgen.control.f$fhr
-		export fileaout=$COMOUT/$COMPONENT/$pgad/$RUNMEM.$cycle.${pgapre}f${fhr}
-		export fileaouti=$COMOUT/$COMPONENT/$pgad/$RUNMEM.$cycle.${pgapre}f${fhr}.idx
+		export pcfile=$COMOUT/$COMPONENT/$pgad/gefs.t${cyc}z.prdgen.control.f$fhr #${RUNMEM}.t${cyc}z.prdgen.control.f$fhr
+		export fileaout=$COMOUT/$COMPONENT/$pgad/gefs.$cycle.${pgapre}f${fhr} #$RUNMEM.$cycle.${pgapre}f${fhr}
+		export fileaouti=$COMOUT/$COMPONENT/$pgad/gefs.$cycle.${pgapre}f${fhr}.idx # $RUNMEM.$cycle.${pgapre}f${fhr}.idx
 		if [[ $RUNMEM = "geaer" ]]; then
 			export fileaout=$COMOUT/$COMPONENT/$pgad/${NET}.${COMPONENT}.$cycle.${pgapre}f${fhr}.grib2
 			export fileaouti=${fileaout}.idx
 		fi
-		export filebout=$COMOUT/$COMPONENT/$pgbd/$RUNMEM.$cycle.${pgbpre}f${fhr}
-		export filebouti=$COMOUT/$COMPONENT/$pgbd/$RUNMEM.$cycle.${pgbpre}f${fhr}.idx
+		export filebout=$COMOUT/$COMPONENT/$pgbd/gefs.$cycle.${pgbpre}f${fhr} # $RUNMEM.$cycle.${pgbpre}f${fhr}
+		export filebouti=$COMOUT/$COMPONENT/$pgbd/gefs.$cycle.${pgbpre}f${fhr}.idx # $RUNMEM.$cycle.${pgbpre}f${fhr}.idx
 	else
 		export pcfile=$DATA/$submc/${RUNMEM}.t${cyc}z.prdgen.control.f$fhr
 		export fileaout=$DATA/$RUNMEM.$cycle.${pgapre}f${fhr}
@@ -329,7 +314,7 @@ for hour in $hours; do
 			fi
 			sDate=$(date)
 			cat <<-EOF
-				FATAL ERROR in ${.sh.file} ($stream): Post data still missing for f$fhr at $sDate after waiting ${SLEEP_TIME}s.
+				FATAL ERROR in ${BASH_SOURCE[1]} ($stream): Post data still missing for f$fhr at $sDate after waiting ${SLEEP_TIME}s.
 					Looked for the following files:
 						Control file: $mcfile $(set +x; if [[ -f $mcfile ]]; then echo "exists"; else; echo "doesn't exist"; fi)
 						Grib file:    $mafile $(set +x; if [[ -f $mafile ]]; then echo "exists"; else; echo "doesn't exist"; fi)
@@ -383,7 +368,7 @@ for hour in $hours; do
 			# Check for error
 			export err=$?
 			if [[ $err -ne 0 ]]; then
-				echo "FATAL ERROR in ${.sh.file} ($stream): Creation of product failed at f${fhr}!"
+				echo "FATAL ERROR in ${BASH_SOURCE[1]} ($stream): Creation of product failed at f${fhr}!"
 				err_chk
 				exit $err
 			fi
@@ -399,6 +384,6 @@ for hour in $hours; do
 	fi # [[ $found = "yes" ]]
 done # for hour in $hours
 
-echo "$(date -u) end ${.sh.file}"
+echo "$(date -u) end ${BASH_SOURCE[1]}"
 
 exit 0

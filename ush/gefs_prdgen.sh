@@ -1,4 +1,4 @@
-#!/bin/ksh
+#! /usr/bin/env bash
 #####################################################################
 # -----------------------------------------------------
 #  Script: gefs_prdgen.sh
@@ -17,17 +17,18 @@
 #     Meng    - 03/09/17 - Remove grib1, PGRBC and PGRBD generation, 
 #                          and use the same ush script to generate all grids
 #     B. Fu   - XX/XX/17 - Replace COPYGB2 with WGRIB2
+#     Xianwu Xue - 08/03/2022 - Add to G-W based on GEFS version
 # -----------------------------------------------------
 #####################################################################
 
-echo "$(date -u) begin ${.sh.file}"
+echo "$(date -u) begin ${BASH_SOURCE[1]}"
 
 set -xa
 
 export ENSADD=${ENSADD:-$USHgefs/global_ensadd.sh}
 
 cat <<-EOF
-	Settings for ${.sh.file}:
+	Settings for ${BASH_SOURCE[1]}:
 	  RUNMEM: $RUNMEM
 	  DATA: $DATA
 
@@ -75,7 +76,7 @@ else
 			-new_grid $grid_spec pgb2file.$ffhr
 	export err=$?
 	if [[ $err -ne 0 ]]; then
-		echo "FATAL ERROR in ${.sh.file} ($stream): wgrib2 for $mafile failed!"
+		echo "FATAL ERROR in ${BASH_SOURCE[1]} ($stream): wgrib2 for $mafile failed!"
 		export err=1
 		err_chk || exit $err
 	fi
@@ -154,7 +155,7 @@ else
 		mv pgb2afile.$ffhr $fileaout
 		testfile=$fileaout
 		if [[ ! -s $testfile ]]; then
-			echo "FATAL ERROR in ${.sh.file} ($stream): $testfile WAS NOT WRITTEN"
+			echo "FATAL ERROR in ${BASH_SOURCE[1]} ($stream): $testfile WAS NOT WRITTEN"
 			export err=1
 			err_chk || exit $err
 		fi # [[ ! -s $testfile ]]
@@ -163,7 +164,7 @@ else
 			mv pgb2afile.$ffhr.idx $fileaouti
 			testfile=$fileaouti
 			if [[ ! -s $testfile ]]; then
-				echo "FATAL ERROR in ${.sh.file} ($stream): $testfile WAS NOT WRITTEN"
+				echo "FATAL ERROR in ${BASH_SOURCE[1]} ($stream): $testfile WAS NOT WRITTEN"
 				export err=1
 				err_chk || exit $err
 			fi # [[ ! -s $testfile ]]
@@ -173,7 +174,7 @@ else
 			mv pgb2bfile.$ffhr $filebout
 			testfile=$filebout
 			if [[ ! -s $testfile ]]; then
-				echo "FATAL ERROR in ${.sh.file} ($stream): $testfile WAS NOT WRITTEN"
+				echo "FATAL ERROR in ${BASH_SOURCE[1]} ($stream): $testfile WAS NOT WRITTEN"
 				export err=1
 				err_chk || exit $err
 			fi # [[ ! -s $testfile ]]
@@ -182,7 +183,7 @@ else
 				mv pgb2bfile.$ffhr.idx $filebouti
 				testfile=$filebouti
 				if [[ ! -s $testfile ]]; then
-					echo "FATAL ERROR in ${.sh.file} ($stream): $testfile WAS NOT WRITTEN"
+					echo "FATAL ERROR in ${BASH_SOURCE[1]} ($stream): $testfile WAS NOT WRITTEN"
 					export err=1
 					err_chk || exit $err
 				fi # [[ ! -s $testfile ]]
@@ -216,7 +217,7 @@ else
 	echo $(date) pgrb2a $jobgrid sendcom $ffhr completed
 fi # [[ -s $DATA/pgrb2$ffhr ]] && [[ $overwrite = no ]]
 
-echo "$(date -u) end ${.sh.file}"
+echo "$(date -u) end ${BASH_SOURCE[1]}"
 
 exit 0
 
