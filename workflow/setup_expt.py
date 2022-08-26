@@ -239,7 +239,7 @@ def input_args():
                         type=int, required=False, default=20)
 
     cycled.add_argument('--app', help='UFS application', type=str,
-                        choices=['ATM', 'ATMW'], required=False, default='ATM')
+                        choices=['ATM', 'ATMW', 'ATMA'], required=False, default='ATM')
 
     # gefs mode additional arguments
     gefs.add_argument('--resens', help='resolution of the ensemble model forecast',
