@@ -219,6 +219,9 @@ class AppConfig:
         if self.do_wafs:
             configs += ['wafs', 'wafsgrib2', 'wafsblending', 'wafsgcip', 'wafsgrib20p25', 'wafsblending0p25']
 
+        if self.do_aero:
+            configs += ['aeroanlinit', 'aeroanlrun', 'aeroanlfinal']
+
         return configs
 
     @property
@@ -404,6 +407,9 @@ class AppConfig:
             gdas_gfs_common_tasks_before_fcst += ['anal']
 
         gdas_gfs_common_tasks_before_fcst += ['sfcanl', 'analcalc']
+
+        if self.do_aero:
+            gdas_gfs_common_tasks_before_fcst += ['aeroanlinit', 'aeroanlrun', 'aeroanlfinal']
 
         gldas_tasks = ['gldas']
         wave_prep_tasks = ['waveinit', 'waveprep']
