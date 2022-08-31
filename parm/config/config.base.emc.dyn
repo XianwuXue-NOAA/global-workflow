@@ -237,9 +237,6 @@ case "$CDUMP" in
     "gfs")
         export FHCYC=24
         ;;
-    "gefs")
-        export FHCYC=24
-        ;;
 esac
 
 # Output frequency of the forecast model (for cycling)

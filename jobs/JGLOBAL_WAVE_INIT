@@ -57,9 +57,9 @@ export EXECwave=${EXECwave:-$HOMEgfs/exec}
 if [ $RUN_ENVIR = "nco" ]; then
     export ROTDIR=${COMROOT:?}/$NET/$envir
 fi
-if [[ $CDUMP == "gefs" ]]; then
-    export COMIN=${COMIN:-${ROTDIR}/${CDUMP}.${PDY}/${cyc}/${RUNMEM}/$COMPONENT}
-    export COMOUT=${COMOUT:-${ROTDIR}/${CDUMP}.${PDY}/${cyc}/${RUNMEM}/$COMPONENT}
+if [ $RUN = "gefs" ]; then
+    export COMIN=${COMIN:-${ROTDIR}/${RUN}.${PDY}/${cyc}/${RUNMEM}/$COMPONENT}
+    export COMOUT=${COMOUT:-${ROTDIR}/${RUN}.${PDY}/${cyc}/${RUNMEM}/$COMPONENT}
 else
     export COMIN=${COMIN:-${ROTDIR}/${CDUMP}.${PDY}/${cyc}/$COMPONENT}
     export COMOUT=${COMOUT:-${ROTDIR}/${CDUMP}.${PDY}/${cyc}/$COMPONENT}

@@ -22,7 +22,7 @@ export USHwave="$HOMEgfs/ush"
 export CDUMPwave="${CDUMP}wave"
 
 # In GFS/GDAS, restart files are generated/read from gdas runs
-if [[ $CDUMP == "gefs" ]]; then
+if [[ $RUN == "gefs" ]]; then
   export CDUMPRSTwave=$CDUMP
 else
   export CDUMPRSTwave="gdas"

@@ -310,7 +310,7 @@ EOF
   # inline post fix files
   if [ $WRITE_DOPOST = ".true." ]; then
     $NLN $PARM_POST/post_tag_gfs${LEVS}             $DATA/itag
-    if [[ $CDUMP == "gefs" ]]; then
+    if [[ $RUN == "gefs" ]]; then
       $NLN $PARM_POST/postxconfig-NT-GEFS.txt         $DATA/postxconfig-NT.txt
       $NLN $PARM_POST/postxconfig-NT-GEFS-F00.txt     $DATA/postxconfig-NT_FH00.txt
     else
@@ -527,7 +527,7 @@ EOF
       logi=logf${FH3}
       pgbi=GFSPRS.GrbF${FH2}
       flxi=GFSFLX.GrbF${FH2}
-      if [ $CDUMP == "gefs" ]; then
+      if [ $RUN == "gefs" ]; then
         mkdir -p $memdir/sfcsig
         mkdir -p $memdir/master
         atmo=$memdir/sfcsig/${CDUMP}.t${cyc}z.atmf${FH3}.$affix
@@ -632,9 +632,12 @@ data_out_GFS() {
         done
       fi
     elif [ $CDUMP = "gfs" ]; then
-      $NCP $DATA/input.nml $ROTDIR/${CDUMP}.${PDY}/${cyc}/atmos/
-    elif [ $CDUMP = "gefs" ]; then
-      $NCP $DATA/input.nml $ROTDIR/${CDUMP}.${PDY}/${cyc}/$RUNMEM/atmos/
+      if [ $RUN = "gefs" ]; then
+        $NCP $DATA/input.nml $ROTDIR/${CDUMP}.${PDY}/${cyc}/$RUNMEM/atmos/
+      else
+        $NCP $DATA/input.nml $ROTDIR/${CDUMP}.${PDY}/${cyc}/atmos/
+      fi
+      
     fi
   fi
 
@@ -656,7 +659,7 @@ WW3_postdet() {
     grdALL=$(printf "%s\n" "${array[@]}" | sort -u | tr '\n' ' ')
 
     for wavGRD in ${grdALL}; do
-      if [ $CDUMP = "gefs" ]; then
+      if [ $RUN = "gefs" ]; then
         $NCP $ROTDIR/${CDUMP}.${PDY}/${cyc}/$RUNMEM/wave/rundata/${COMPONENTwave}.mod_def.$wavGRD $DATA/mod_def.$wavGRD
       else
         $NCP $ROTDIR/${CDUMP}.${PDY}/${cyc}/wave/rundata/${COMPONENTwave}.mod_def.$wavGRD $DATA/mod_def.$wavGRD
@@ -664,7 +667,7 @@ WW3_postdet() {
     done
   else 
     #if shel, only 1 waveGRD which is linked to mod_def.ww3 
-    if [ $CDUMP = "gefs" ]; then
+    if [ $RUN = "gefs" ]; then
       $NCP $ROTDIR/${CDUMP}.${PDY}/${cyc}/$RUNMEM/wave/rundata/${COMPONENTwave}.mod_def.$waveGRD $DATA/mod_def.ww3
     else
       $NCP $ROTDIR/${CDUMP}.${PDY}/${cyc}/wave/rundata/${COMPONENTwave}.mod_def.$waveGRD $DATA/mod_def.ww3
@@ -684,7 +687,7 @@ WW3_postdet() {
   export WRDATE=$($NDATE -${WAVHCYC} $CDATE)
   export WRPDY=$(echo $WRDATE | cut -c1-8)
   export WRcyc=$(echo $WRDATE | cut -c9-10)
-  if [ $CDUMP = "gefs" ]; then
+  if [ $RUN = "gefs" ]; then
     export WRDIR=${ROTDIR}/${CDUMPRSTwave}.${WRPDY}/${WRcyc}/$RUNMEM/wave/restart
     export RSTDIR_WAVE=$ROTDIR/${CDUMP}.${PDY}/${cyc}/$RUNMEM/wave/restart
   else
@@ -827,7 +830,7 @@ MOM6_postdet() {
   OCNRES=${OCNRES:-"025"}
 
   # Copy MOM6 ICs
-  if [[ $CDUMP == "gefs" ]]; then
+  if [[ $RUN == "gefs" ]]; then
     $NCP -pf $ROTDIR/$CDUMP.$PDY/$cyc/$RUNMEM/ocean/INPUT/MOM*nc $DATA/INPUT/
   else
     $NCP -pf $ICSDIR/$CDATE/ocn/MOM*nc $DATA/INPUT/
@@ -847,7 +850,7 @@ MOM6_postdet() {
 
   # Copy mediator restart files to RUNDIR
   if [ $warm_start = ".true." -o $RERUN = "YES" ]; then
-    if [[ $CDUMP == "gefs" ]]; then
+    if [[ $RUN == "gefs" ]]; then
       $NCP $ROTDIR/$CDUMP.$PDY/$cyc/$RUNMEM/med/ufs.cpld*.nc $DATA/
       $NCP $ROTDIR/$CDUMP.$PDY/$cyc/$RUNMEM/med/rpointer.cpl $DATA/
     else
@@ -981,7 +984,7 @@ CICE_postdet() {
   iceic="cice_model.res_$CDATE.nc"
 
   # Copy CICE IC
-  if [[ $CDUMP == "gefs" ]]; then
+  if [[ $RUN == "gefs" ]]; then
     $NCP -p $ROTDIR/$CDUMP.$PDY/$cyc/$RUNMEM/ice/INPUT/cice_model_${ICERESdec}.res_$CDATE.nc $DATA/$iceic
   else
     $NCP -p $ICSDIR/$CDATE/ice/cice_model_${ICERESdec}.res_$CDATE.nc $DATA/$iceic

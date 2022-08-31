@@ -38,7 +38,7 @@ if [ ${RETRO:-"NO"} = "NO" ]; then # Operational input
     export RUNICSH=${GDASINIT_DIR}/run_${gfs_ver}.chgres.sh
   elif [[ "$CDATE" -lt "2021032100" ]]; then
     export gfs_ver=v15
-    if [[ $CDUMP == "gefs" ]]; then
+    if [[ $RUN == "gefs" ]]; then
       export RUNICSH=${GDASINIT_DIR}/run_${gfs_ver}.chgres.gefs.sh
     else
       export RUNICSH=${GDASINIT_DIR}/run_${gfs_ver}.chgres.gfs.sh

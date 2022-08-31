@@ -21,7 +21,7 @@ status=$?
 [[ $status -ne 0 ]] && exit $status
 err=0
 
-if [[ $CDUMP == "gefs" ]]; then
+if [[ $RUN == "gefs" ]]; then
     export RUNMEM=${RUNMEM:-"c00"}
 fi
 ###############################################################
@@ -40,8 +40,8 @@ status=$?
 [[ $status -ne 0 ]] && exit $status
 
 # Create ICSDIR if needed
-if [[ $CDUMP == "gefs" ]]; then
-    ICSDIR=${ROTDIR}/${CDUMP}.${PDY}/${cyc}/${RUNMEM} #/atmos
+if [ $RUN = "gefs" ]; then
+    ICSDIR=${ROTDIR}/${RUN}.${PDY}/${cyc}/${RUNMEM}
     [[ ! -d $ICSDIR ]] && mkdir -p $ICSDIR
     [[ ! -d $ICSDIR/atmos ]] && mkdir -p $ICSDIR/atmos
     [[ ! -d $ICSDIR/ocean ]] && mkdir -p $ICSDIR/ocean/INPUT
@@ -61,7 +61,7 @@ if [ $ICERES = '050' ]; then
 fi 
 
 # Setup ATM initial condition files
-if [[ $CDUMP == "gefs" ]]; then
+if [ $RUN = "gefs" ]; then
     cp -r $BASE_CPLIC/$CPL_ATMIC/$CDATE/gfs/$CASE/INPUT $ICSDIR/atmos/
 else
     cp -r $BASE_CPLIC/$CPL_ATMIC/$CDATE/$CDUMP/*  $ICSDIR/$CDATE/atmos/
@@ -74,7 +74,7 @@ err=$((err + rc))
 
 
 # Setup Ocean IC files 
-if [[ $CDUMP == "gefs" ]]; then
+if [ $RUN = "gefs" ]; then
     cp -r $BASE_CPLIC/$CPL_OCNIC/$CDATE/ocn/$OCNRES/MOM*.nc  $ICSDIR/ocean/INPUT/
 else
     cp -r $BASE_CPLIC/$CPL_OCNIC/$CDATE/ocn/$OCNRES/MOM*.nc  $ICSDIR/$CDATE/ocn/
@@ -86,7 +86,7 @@ fi
 err=$((err + rc))
 
 #Setup Ice IC files
-if [[ $CDUMP == "gefs" ]]; then
+if [ $RUN = "gefs" ]; then
     cp $BASE_CPLIC/$CPL_ICEIC/$CDATE/ice/$ICERES/cice5_model_${ICERESdec}.res_$CDATE.nc $ICSDIR/ice/INPUT/cice_model_${ICERESdec}.res_$CDATE.nc
 else
     cp $BASE_CPLIC/$CPL_ICEIC/$CDATE/ice/$ICERES/cice5_model_${ICERESdec}.res_$CDATE.nc $ICSDIR/$CDATE/ice/cice_model_${ICERESdec}.res_$CDATE.nc
@@ -98,14 +98,14 @@ fi
 err=$((err + rc))
 
 if [ $DO_WAVE = "YES" ]; then
-  if [[ $CDUMP == "gefs" ]]; then
+  if [ $RUN = "gefs" ]; then
     [[ ! -d $ICSDIR/wave/restart ]] && mkdir -p $ICSDIR/wave/restart/
   else
     [[ ! -d $ICSDIR/$CDATE/wav ]] && mkdir -p $ICSDIR/$CDATE/wav
   fi
   for grdID in $waveGRD
   do
-    if [[ $CDUMP == "gefs" ]]; then
+    if [ $RUN = "gefs" ]; then
       cp $BASE_CPLIC/$CPL_WAVIC/$CDATE/wav/$grdID/*restart.$grdID $ICSDIR/wave/restart/
     else
       cp $BASE_CPLIC/$CPL_WAVIC/$CDATE/wav/$grdID/*restart.$grdID $ICSDIR/$CDATE/wav/
@@ -119,18 +119,18 @@ if [ $DO_WAVE = "YES" ]; then
 fi
 
 # Stage the FV3 initial conditions to ROTDIR
-if [[ $CDUMP != "gefs" ]]; then
-    export OUTDIR="$ICSDIR/$CDATE/atmos/$CASE/INPUT"
-    COMOUT="$ROTDIR/$CDUMP.$PDY/$cyc/atmos"
-    [[ ! -d $COMOUT ]] && mkdir -p $COMOUT
-    cd $COMOUT || exit 99
-    rm -rf INPUT
-    $NLN $OUTDIR .
+if [ $RUN != "gefs" ]; then
+  export OUTDIR="$ICSDIR/$CDATE/atmos/$CASE/INPUT"
+  COMOUT="$ROTDIR/$CDUMP.$PDY/$cyc/atmos"
+  [[ ! -d $COMOUT ]] && mkdir -p $COMOUT
+  cd $COMOUT || exit 99
+  rm -rf INPUT
+  $NLN $OUTDIR .
 fi
 
 #Stage the WW3 initial conditions to ROTDIR 
 if [ $DO_WAVE = "YES" ]; then
-  if [[ $CDUMP != "gefs" ]]; then
+  if [ $RUN != "gefs" ]; then
     export OUTDIRw="$ICSDIR/$CDATE/wav"
     COMOUTw="$ROTDIR/$CDUMP.$PDY/$cyc/wave/restart"
     [[ ! -d $COMOUTw ]] && mkdir -p $COMOUTw
