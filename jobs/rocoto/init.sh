@@ -43,7 +43,7 @@ export mm=$(echo $CDATE | cut -c5-6)
 export dd=$(echo $CDATE | cut -c7-8)
 export hh=${cyc:-$(echo $CDATE | cut -c9-10)}
 
-export DATA=${DATA:-${DATAROOT}/init}
+export DATA=${DATA:-${DATAROOT}/init_${jobid:?}}
 export EXTRACT_DIR=${EXTRACT_DIR:-$ROTDIR}
 export WORKDIR=${WORKDIR:-$DATA}
 export OUTDIR=${OUTDIR:-$ROTDIR}

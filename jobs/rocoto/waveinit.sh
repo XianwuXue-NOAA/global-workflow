@@ -9,6 +9,9 @@ echo "=============== START TO SOURCE FV3GFS WORKFLOW MODULES ==============="
 status=$?
 [[ $status -ne 0 ]] && exit $status
 
+if [[ $CDUMP == "gefs" ]]; then
+    export RUNMEM=${RUNMEM:-"c00"}
+fi
 ###############################################################
 echo
 echo "=============== START TO RUN WAVE INIT ==============="

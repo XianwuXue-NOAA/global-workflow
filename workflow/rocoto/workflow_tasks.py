@@ -42,6 +42,9 @@ class Tasks:
                       'CDATE': '<cyclestr>@Y@m@d@H</cyclestr>',
                       'PDY': '<cyclestr>@Y@m@d</cyclestr>',
                       'cyc': '<cyclestr>@H</cyclestr>'}
+        if self.cdump == "gefs":
+            envar_dict['RUNMEM'] = "#member#"
+
         self.envars = self._set_envars(envar_dict)
 
     @staticmethod
@@ -79,21 +82,21 @@ class Tasks:
         account = task_config['ACCOUNT']
 
         walltime = task_config[f'wtime_{task_name}']
-        if self.cdump in ['gfs'] and f'wtime_{task_name}_gfs' in task_config.keys():
+        if self.cdump in ['gfs', 'gefs'] and f'wtime_{task_name}_gfs' in task_config.keys():
             walltime = task_config[f'wtime_{task_name}_gfs']
 
         cores = task_config[f'npe_{task_name}']
-        if self.cdump in ['gfs'] and f'npe_{task_name}_gfs' in task_config.keys():
+        if self.cdump in ['gfs', 'gefs'] and f'npe_{task_name}_gfs' in task_config.keys():
             cores = task_config[f'npe_{task_name}_gfs']
 
         ppn = task_config[f'npe_node_{task_name}']
-        if self.cdump in ['gfs'] and f'npe_node_{task_name}_gfs' in task_config.keys():
+        if self.cdump in ['gfs', 'gefs'] and f'npe_node_{task_name}_gfs' in task_config.keys():
             ppn = task_config[f'npe_node_{task_name}_gfs']
 
         nodes = np.int(np.ceil(np.float(cores) / np.float(ppn)))
 
         threads = task_config[f'nth_{task_name}']
-        if self.cdump in ['gfs'] and f'nth_{task_name}_gfs' in task_config.keys():
+        if self.cdump in ['gfs', 'gefs'] and f'nth_{task_name}_gfs' in task_config.keys():
             threads = task_config[f'nth_{task_name}_gfs']
 
         memory = task_config.get(f'memory_{task_name}', None)
@@ -143,7 +146,10 @@ class Tasks:
         # Atm ICs
         if self.app_config.do_atm:
             atm_res = self._base.get('CASE', 'C384')
-            prefix = f"{cpl_ic['BASE_CPLIC']}/{cpl_ic['CPL_ATMIC']}/@Y@m@d@H/{self.cdump}"
+            if self.cdump == "gefs":
+                prefix = f"{cpl_ic['BASE_CPLIC']}/{cpl_ic['CPL_ATMIC']}/@Y@m@d@H/gfs"
+            else:
+                prefix = f"{cpl_ic['BASE_CPLIC']}/{cpl_ic['CPL_ATMIC']}/@Y@m@d@H/{self.cdump}"
             for file in ['gfs_ctrl.nc'] + \
                         [f'{datatype}_data.tile{tile}.nc'
                         for datatype in ['gfs', 'sfc']
@@ -187,7 +193,11 @@ class Tasks:
         dependencies = rocoto.create_dependency(dep_condition='and', dep=deps)
 
         resources = self.get_resource('coupled_ic')
-        task = create_wf_task('coupled_ic', resources, cdump=self.cdump, envar=self.envars, dependency=dependencies)
+        if self.cdump in ["gefs"]:
+            task = create_wf_task('coupled_ic', resources, cdump=self.cdump, envar=self.envars, dependency=dependencies,
+                                  metatask='coupled_ic', varname="member", varval="&MEMLIST;")
+        else:
+            task = create_wf_task('coupled_ic', resources, cdump=self.cdump, envar=self.envars, dependency=dependencies)
 
         return task
 
@@ -198,12 +208,19 @@ class Tasks:
 
         deps = []
         for file in files:
-            dep_dict = {'type': 'data', 'data': f'&ROTDIR;/{self.cdump}.@Y@m@d/@H/{file}'}
+            if self.cdump == "gefs":
+                dep_dict = {'type': 'data', 'data': f'&ROTDIR;/{self.cdump}.@Y@m@d/@H/#member#/atmos/{file}'}
+            else:
+                dep_dict = {'type': 'data', 'data': f'&ROTDIR;/{self.cdump}.@Y@m@d/@H/{file}'}
             deps.append(rocoto.add_dependency(dep_dict))
         dependencies = rocoto.create_dependency(dep_condition='nor', dep=deps)
 
         resources = self.get_resource('getic')
-        task = create_wf_task('getic', resources, cdump=self.cdump, envar=self.envars, dependency=dependencies)
+        if self.cdump == "gefs":
+            task = create_wf_task('getic', resources, cdump=self.cdump, envar=self.envars, dependency=dependencies,
+                                  metatask='getic', varname="member", varval="&MEMLIST;")
+        else:
+            task = create_wf_task('getic', resources, cdump=self.cdump, envar=self.envars, dependency=dependencies)
 
         return task
 
@@ -214,20 +231,36 @@ class Tasks:
                  'gfs.t@Hz.atmanl.nc',
                  'atmos/gfs.t@Hz.atmanl.nc',
                  'atmos/RESTART/@Y@m@d.@H0000.sfcanl_data.tile6.nc']
-
         deps = []
         for file in files:
-            dep_dict = {'type': 'data', 'data': f'&ROTDIR;/{self.cdump}.@Y@m@d/@H/{file}'}
+            if self.cdump == "gefs":
+                dep_dict = {'type': 'data', 'data': f'&ROTDIR;/{self.cdump}.@Y@m@d/@H/#member#/{file}'}
+            else:
+                dep_dict = {'type': 'data', 'data': f'&ROTDIR;/{self.cdump}.@Y@m@d/@H/{file}'}
             deps.append(rocoto.add_dependency(dep_dict))
+
+        if self.cdump == "gefs":
+            data = [f'&ROTDIR;/{self.cdump}.@Y@m@d/@H/#member#/atmos/RESTART/', '@Y@m@d.@H0000.sfcanl_data.tile6.nc']
+            offset = [None, '-03:00:00']
+            dep_dict = {'type': 'data', 'data': data, 'offset': offset}
+            deps.append(rocoto.add_dependency(dep_dict))
+
         dependencies = rocoto.create_dependency(dep_condition='or', dep=deps)
 
         if self.app_config.do_hpssarch:
-            dep_dict = {'type': 'task', 'name': f'{self.cdump}getic'}
+            if self.cdump == "gefs":
+                dep_dict = {'type': 'metatask', 'name': f'{self.cdump}getic'}
+            else:
+                dep_dict = {'type': 'task', 'name': f'{self.cdump}getic'}
             dependencies.append(rocoto.add_dependency(dep_dict))
             dependencies = rocoto.create_dependency(dep_condition='and', dep=dependencies)
 
         resources = self.get_resource('init')
-        task = create_wf_task('init', resources, cdump=self.cdump, envar=self.envars, dependency=dependencies)
+        if self.cdump == "gefs":
+            task = create_wf_task('init', resources, cdump=self.cdump, envar=self.envars, dependency=dependencies,
+                                  metatask='init', varname="member", varval="&MEMLIST;")
+        else:
+            task = create_wf_task('init', resources, cdump=self.cdump, envar=self.envars, dependency=dependencies)
 
         return task
 
@@ -272,14 +305,21 @@ class Tasks:
             deps.append(rocoto.add_dependency(dep_dict))
             dependencies = rocoto.create_dependency(dep_condition='or', dep=deps)
 
-        task = create_wf_task('waveinit', resources, cdump=self.cdump, envar=self.envars, dependency=dependencies)
+        if self.cdump == "gefs":
+            task = create_wf_task('waveinit', resources, cdump=self.cdump, envar=self.envars, dependency=dependencies,
+                                  metatask='waveinit', varname="member", varval="&MEMLIST;")
+        else:
+            task = create_wf_task('waveinit', resources, cdump=self.cdump, envar=self.envars, dependency=dependencies)
 
         return task
 
     def waveprep(self):
 
         deps = []
-        dep_dict = {'type': 'task', 'name': f'{self.cdump}waveinit'}
+        if self.cdump == "gefs":
+            dep_dict = {'type': 'metatask', 'name': f'{self.cdump}waveinit'}
+        else:
+            dep_dict = {'type': 'task', 'name': f'{self.cdump}waveinit'}
         deps.append(rocoto.add_dependency(dep_dict))
         dependencies = rocoto.create_dependency(dep=deps)
 
@@ -300,7 +340,7 @@ class Tasks:
 
         # Calculate offset based on CDUMP = gfs | gdas
         interval = None
-        if self.cdump in ['gfs']:
+        if self.cdump in ['gfs', 'gefs']:
             interval = self._base['INTERVAL_GFS']
         elif self.cdump in ['gdas']:
             interval = self._base['INTERVAL']
@@ -516,7 +556,8 @@ class Tasks:
     def fcst(self):
 
         fcst_map = {'forecast-only': self._fcst_forecast_only,
-                    'cycled': self._fcst_cycled}
+                    'cycled': self._fcst_cycled,
+                    'gefs': self._fcst_gefs}
 
         try:
             task = fcst_map[self.app_config.mode]()
@@ -560,7 +601,7 @@ class Tasks:
         if self.app_config.do_aero:
             # Calculate offset based on CDUMP = gfs | gdas
             interval = None
-            if self.cdump in ['gfs']:
+            if self.cdump in ['gfs', 'gefs']:
                 interval = self._base['INTERVAL_GFS']
             elif self.cdump in ['gdas']:
                 interval = self._base['INTERVAL']
@@ -605,6 +646,70 @@ class Tasks:
 
         return task
 
+    @property
+    def _fcst_gefs(self):
+        dependencies = []
+        deps = []
+        data = f'&ROTDIR;/{self.cdump}.@Y@m@d/@H/#member#/atmos/INPUT/sfc_data.tile6.nc'
+        dep_dict = {'type': 'data', 'data': data}
+        deps.append(rocoto.add_dependency(dep_dict))
+        data = f'&ROTDIR;/{self.cdump}.@Y@m@d/@H/#member#/atmos/RESTART/@Y@m@d.@H0000.sfcanl_data.tile6.nc'
+        dep_dict = {'type': 'data', 'data': data}
+        deps.append(rocoto.add_dependency(dep_dict))
+        if self.cdump == "gefs":
+            data = [f'&ROTDIR;/{self.cdump}.@Y@m@d/@H/#member#/atmos/RESTART/', '@Y@m@d.@H0000.sfcanl_data.tile6.nc']
+            offset = [None, '-03:00:00']
+            dep_dict = {'type': 'data', 'data': data, 'offset': offset}
+            deps.append(rocoto.add_dependency(dep_dict))
+        dependencies.append(rocoto.create_dependency(dep_condition='or', dep=deps))
+
+        deps = []
+        if self.app_config.model_app in ['ATM']:
+            if self.cdump in ["gefs"]:
+                dep_dict = {'type': 'metatask', 'name': f'{self.cdump}getic'}
+            else:
+                dep_dict = {'type': 'task', 'name': f'{self.cdump}getic'}
+            dependencies.append(rocoto.add_dependency(dep_dict))
+        if 'S2S' in self.app_config.model_app:
+            if self.cdump in ["gefs"]:
+                dep_dict = {'type': 'metatask', 'name': f'{self.cdump}coupled_ic'}
+            else:
+                dep_dict = {'type': 'task', 'name': f'{self.cdump}coupled_ic'}
+            dependencies.append(rocoto.add_dependency(dep_dict))
+            
+
+        if self.app_config.do_wave and self.cdump in self.app_config.wave_cdumps:
+            wave_job = 'waveprep' if self.app_config.model_app in ['ATMW'] else 'waveinit'
+            if self.cdump in ["gefs"]:
+                dep_dict = {'type': 'metatask', 'name': f'{self.cdump}{wave_job}'}
+            else:
+                dep_dict = {'type': 'task', 'name': f'{self.cdump}{wave_job}'}
+            dependencies.append(rocoto.add_dependency(dep_dict))
+
+        if self.app_config.do_aero:
+            # Calculate offset based on CDUMP = gfs | gdas
+            interval = None
+            if self.cdump in ['gfs', 'gefs']:
+                interval = self._base['INTERVAL_GFS']
+            elif self.cdump in ['gdas']:
+                interval = self._base['INTERVAL']
+            offset = f'-{interval}'
+            deps = []
+            dep_dict = {'type': 'task', 'name': f'{self.cdump}aerosol_init'}
+            deps.append(rocoto.add_dependency(dep_dict))
+            dep_dict = {'type': 'cycleexist', 'condition': 'not', 'offset': offset}
+            deps.append(rocoto.add_dependency(dep_dict))
+            dependencies.append(rocoto.create_dependency(dep_condition='or', dep=deps))
+
+        dependencies = rocoto.create_dependency(dep_condition='and', dep=dependencies)
+
+        resources = self.get_resource('fcst')
+        task = create_wf_task('fcst', resources, cdump=self.cdump, envar=self.envars, dependency=dependencies,
+                              metatask='fcst', varname="member", varval="&MEMLIST;")
+
+        return task
+
+
     def post(self):
         add_anl_to_post = False
         if self.app_config.mode in ['cycled']:
@@ -632,7 +737,7 @@ class Tasks:
             fhrs = []
             if cdump in ['gdas']:
                 fhrs = range(fhmin, fhmax + fhout, fhout)
-            elif cdump in ['gfs']:
+            elif cdump in ['gfs', 'gefs']:
                 fhmax = np.max(
                     [config['FHMAX_GFS_00'], config['FHMAX_GFS_06'], config['FHMAX_GFS_12'], config['FHMAX_GFS_18']])
                 fhout = config['FHOUT_GFS']
@@ -657,10 +762,17 @@ class Tasks:
             return grp, dep, lst
 
         deps = []
-        data = f'&ROTDIR;/{self.cdump}.@Y@m@d/@H/atmos/{self.cdump}.t@Hz.log#dep#.txt'
-        dep_dict = {'type': 'data', 'data': data}
-        deps.append(rocoto.add_dependency(dep_dict))
-        dep_dict = {'type': 'task', 'name': f'{self.cdump}fcst'}
+        if self.cdump == 'gefs':
+            data = f'&ROTDIR;/{self.cdump}.@Y@m@d/@H/#member#/atmos/sfcsig/{self.cdump}.t@Hz.logf000.txt'
+            pass
+        else:
+            data = f'&ROTDIR;/{self.cdump}.@Y@m@d/@H/atmos/{self.cdump}.t@Hz.log#dep#.txt'
+            dep_dict = {'type': 'data', 'data': data}
+            deps.append(rocoto.add_dependency(dep_dict))
+        if self.cdump == 'gefs':
+            dep_dict = {'type': 'metatask', 'name': f'{self.cdump}fcst'}
+        else:
+            dep_dict = {'type': 'task', 'name': f'{self.cdump}fcst'}
         deps.append(rocoto.add_dependency(dep_dict))
         dependencies = rocoto.create_dependency(dep_condition='or', dep=deps)
 
@@ -670,13 +782,16 @@ class Tasks:
                           'ROTDIR': self._base.get('ROTDIR')}
         for key, value in postenvar_dict.items():
             postenvars.append(rocoto.create_envar(name=key, value=str(value)))
-
         varname1, varname2, varname3 = 'grp', 'dep', 'lst'
         varval1, varval2, varval3 = _get_postgroups(self.cdump, self._configs[task_name], add_anl=add_anl_to_post)
         vardict = {varname2: varval2, varname3: varval3}
 
         resources = self.get_resource(task_name)
-        task = create_wf_task(task_name, resources, cdump=self.cdump, envar=postenvars, dependency=dependencies,
+        if self.cdump == 'gefs':
+            task = create_wf_task(task_name, resources, cdump=self.cdump, envar=self.envars, dependency=dependencies,
+                                  metatask=task_name, varname="member", varval="&MEMLIST;")
+        else:
+            task = create_wf_task(task_name, resources, cdump=self.cdump, envar=postenvars, dependency=dependencies,
                               metatask=task_name, varname=varname1, varval=varval1, vardict=vardict)
 
         return task
@@ -843,7 +958,7 @@ class Tasks:
             fhrs = []
             if cdump in ['gdas']:
                 fhrs = range(fhmin, fhmax + fhout, fhout)
-            elif cdump in ['gfs']:
+            elif cdump in ['gfs', 'gefs']:
                 fhmax = np.max(
                     [config['FHMAX_GFS_00'], config['FHMAX_GFS_06'], config['FHMAX_GFS_12'], config['FHMAX_GFS_18']])
                 fhout = config['FHOUT_GFS']
@@ -941,7 +1056,7 @@ class Tasks:
         if self.app_config.do_vrfy:
             dep_dict = {'type': 'task', 'name': f'{self.cdump}vrfy'}
             deps.append(rocoto.add_dependency(dep_dict))
-        if self.app_config.do_metp and self.cdump in ['gfs']:
+        if self.app_config.do_metp and self.cdump in ['gfs', 'gefs']:
             dep_dict = {'type': 'metatask', 'name': f'{self.cdump}metp'}
             deps.append(rocoto.add_dependency(dep_dict))
         if self.app_config.do_wave:

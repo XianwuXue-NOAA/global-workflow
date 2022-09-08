@@ -14,6 +14,7 @@
 FV3_GEFS_postdet(){
   echo SUB ${FUNCNAME[0]}: Linking input data for FV3 $RUN
   # soft link commands insert here
+  FV3_GFS_postdet
 }
 
 DATM_postdet(){
@@ -309,8 +310,13 @@ EOF
   # inline post fix files
   if [ $WRITE_DOPOST = ".true." ]; then
     $NLN $PARM_POST/post_tag_gfs${LEVS}             $DATA/itag
-    $NLN $PARM_POST/postxconfig-NT-GFS-TWO.txt      $DATA/postxconfig-NT.txt
-    $NLN $PARM_POST/postxconfig-NT-GFS-F00-TWO.txt  $DATA/postxconfig-NT_FH00.txt
+    if [[ $CDUMP == "gefs" ]]; then
+      $NLN $PARM_POST/postxconfig-NT-GEFS.txt         $DATA/postxconfig-NT.txt
+      $NLN $PARM_POST/postxconfig-NT-GEFS-F00.txt     $DATA/postxconfig-NT_FH00.txt
+    else
+      $NLN $PARM_POST/postxconfig-NT-GFS-TWO.txt      $DATA/postxconfig-NT.txt
+      $NLN $PARM_POST/postxconfig-NT-GFS-F00-TWO.txt  $DATA/postxconfig-NT_FH00.txt
+    fi
     $NLN $PARM_POST/params_grib2_tbl_new            $DATA/params_grib2_tbl_new
   fi
 
@@ -521,11 +527,21 @@ EOF
       logi=logf${FH3}
       pgbi=GFSPRS.GrbF${FH2}
       flxi=GFSFLX.GrbF${FH2}
-      atmo=$memdir/${CDUMP}.t${cyc}z.atmf${FH3}.$affix
-      sfco=$memdir/${CDUMP}.t${cyc}z.sfcf${FH3}.$affix
-      logo=$memdir/${CDUMP}.t${cyc}z.logf${FH3}.txt
-      pgbo=$memdir/${CDUMP}.t${cyc}z.master.grb2f${FH3}
-      flxo=$memdir/${CDUMP}.t${cyc}z.sfluxgrbf${FH3}.grib2
+      if [ $CDUMP == "gefs" ]; then
+        mkdir -p $memdir/sfcsig
+        mkdir -p $memdir/master
+        atmo=$memdir/sfcsig/${CDUMP}.t${cyc}z.atmf${FH3}.$affix
+        sfco=$memdir/sfcsig/${CDUMP}.t${cyc}z.sfcf${FH3}.$affix
+        logo=$memdir/sfcsig/${CDUMP}.t${cyc}z.logf${FH3}.txt
+        pgbo=$memdir/master/${CDUMP}.t${cyc}z.master.grb2f${FH3}
+        flxo=$memdir/master/${CDUMP}.t${cyc}z.sfluxgrbf${FH3}.grib2
+      else
+        atmo=$memdir/${CDUMP}.t${cyc}z.atmf${FH3}.$affix
+        sfco=$memdir/${CDUMP}.t${cyc}z.sfcf${FH3}.$affix
+        logo=$memdir/${CDUMP}.t${cyc}z.logf${FH3}.txt
+        pgbo=$memdir/${CDUMP}.t${cyc}z.master.grb2f${FH3}
+        flxo=$memdir/${CDUMP}.t${cyc}z.sfluxgrbf${FH3}.grib2
+      fi
       eval $NLN $atmo $atmi
       eval $NLN $sfco $sfci
       eval $NLN $logo $logi
@@ -557,6 +573,20 @@ FV3_GFS_nml(){
   FV3_namelists
   echo SUB ${FUNCNAME[0]}: FV3 name lists and model configure file created
 }
+
+FV3_GEFS_nml(){
+  # namelist output for a certain component
+  echo SUB ${FUNCNAME[0]}: Creating name lists and model configure file for FV3
+  if [ $machine = 'sandbox' ]; then
+    cd $SCRIPTDIR
+    echo "MAIN: !!!Sandbox mode, writing to current directory!!!"
+  fi
+  # Call child scripts in current script directory
+  source $SCRIPTDIR/parsing_namelists_FV3.sh
+  FV3_namelists
+  echo SUB ${FUNCNAME[0]}: FV3 name lists and model configure file created
+}
+
 
 DATM_nml(){
   source $SCRIPTDIR/parsing_namelists_DATM.sh
@@ -603,10 +633,16 @@ data_out_GFS() {
       fi
     elif [ $CDUMP = "gfs" ]; then
       $NCP $DATA/input.nml $ROTDIR/${CDUMP}.${PDY}/${cyc}/atmos/
+    elif [ $CDUMP = "gefs" ]; then
+      $NCP $DATA/input.nml $ROTDIR/${CDUMP}.${PDY}/${cyc}/$RUNMEM/atmos/
     fi
   fi
 
   echo "SUB ${FUNCNAME[0]}: Output data for FV3 copied"
+}
+
+data_out_GEFS() {
+  data_out_GFS
 }
 
 WW3_postdet() {
@@ -620,11 +656,19 @@ WW3_postdet() {
     grdALL=$(printf "%s\n" "${array[@]}" | sort -u | tr '\n' ' ')
 
     for wavGRD in ${grdALL}; do
-      $NCP $ROTDIR/${CDUMP}.${PDY}/${cyc}/wave/rundata/${COMPONENTwave}.mod_def.$wavGRD $DATA/mod_def.$wavGRD
+      if [ $CDUMP = "gefs" ]; then
+        $NCP $ROTDIR/${CDUMP}.${PDY}/${cyc}/$RUNMEM/wave/rundata/${COMPONENTwave}.mod_def.$wavGRD $DATA/mod_def.$wavGRD
+      else
+        $NCP $ROTDIR/${CDUMP}.${PDY}/${cyc}/wave/rundata/${COMPONENTwave}.mod_def.$wavGRD $DATA/mod_def.$wavGRD
+      fi
     done
   else 
     #if shel, only 1 waveGRD which is linked to mod_def.ww3 
-    $NCP $ROTDIR/${CDUMP}.${PDY}/${cyc}/wave/rundata/${COMPONENTwave}.mod_def.$waveGRD $DATA/mod_def.ww3
+    if [ $CDUMP = "gefs" ]; then
+      $NCP $ROTDIR/${CDUMP}.${PDY}/${cyc}/$RUNMEM/wave/rundata/${COMPONENTwave}.mod_def.$waveGRD $DATA/mod_def.ww3
+    else
+      $NCP $ROTDIR/${CDUMP}.${PDY}/${cyc}/wave/rundata/${COMPONENTwave}.mod_def.$waveGRD $DATA/mod_def.ww3
+    fi
   fi
 
 
@@ -640,8 +684,13 @@ WW3_postdet() {
   export WRDATE=$($NDATE -${WAVHCYC} $CDATE)
   export WRPDY=$(echo $WRDATE | cut -c1-8)
   export WRcyc=$(echo $WRDATE | cut -c9-10)
-  export WRDIR=${ROTDIR}/${CDUMPRSTwave}.${WRPDY}/${WRcyc}/wave/restart
-  export RSTDIR_WAVE=$ROTDIR/${CDUMP}.${PDY}/${cyc}/wave/restart
+  if [ $CDUMP = "gefs" ]; then
+    export WRDIR=${ROTDIR}/${CDUMPRSTwave}.${WRPDY}/${WRcyc}/$RUNMEM/wave/restart
+    export RSTDIR_WAVE=$ROTDIR/${CDUMP}.${PDY}/${cyc}/$RUNMEM/wave/restart
+  else
+    export WRDIR=${ROTDIR}/${CDUMPRSTwave}.${WRPDY}/${WRcyc}/wave/restart
+    export RSTDIR_WAVE=$ROTDIR/${CDUMP}.${PDY}/${cyc}/wave/restart
+  fi
   export datwave=$COMOUTwave/rundata
   export wavprfx=${CDUMPwave}${WAV_MEMBER:-}
 
@@ -778,7 +827,11 @@ MOM6_postdet() {
   OCNRES=${OCNRES:-"025"}
 
   # Copy MOM6 ICs
-  $NCP -pf $ICSDIR/$CDATE/ocn/MOM*nc $DATA/INPUT/
+  if [[ $CDUMP == "gefs" ]]; then
+    $NCP -pf $ROTDIR/$CDUMP.$PDY/$cyc/$RUNMEM/ocean/INPUT/MOM*nc $DATA/INPUT/
+  else
+    $NCP -pf $ICSDIR/$CDATE/ocn/MOM*nc $DATA/INPUT/
+  fi
 
   # Copy MOM6 fixed files
   $NCP -pf $FIXmom/$OCNRES/* $DATA/INPUT/
@@ -794,8 +847,13 @@ MOM6_postdet() {
 
   # Copy mediator restart files to RUNDIR
   if [ $warm_start = ".true." -o $RERUN = "YES" ]; then
-    $NCP $ROTDIR/$CDUMP.$PDY/$cyc/med/ufs.cpld*.nc $DATA/
-    $NCP $ROTDIR/$CDUMP.$PDY/$cyc/med/rpointer.cpl $DATA/
+    if [[ $CDUMP == "gefs" ]]; then
+      $NCP $ROTDIR/$CDUMP.$PDY/$cyc/$RUNMEM/med/ufs.cpld*.nc $DATA/
+      $NCP $ROTDIR/$CDUMP.$PDY/$cyc/$RUNMEM/med/rpointer.cpl $DATA/
+    else
+      $NCP $ROTDIR/$CDUMP.$PDY/$cyc/med/ufs.cpld*.nc $DATA/
+      $NCP $ROTDIR/$CDUMP.$PDY/$cyc/med/rpointer.cpl $DATA/
+    fi
   fi
 
   if [ $DO_OCN_SPPT = "YES" -o $DO_OCN_PERT_EPBL = "YES" ]; then
@@ -923,7 +981,11 @@ CICE_postdet() {
   iceic="cice_model.res_$CDATE.nc"
 
   # Copy CICE IC
-  $NCP -p $ICSDIR/$CDATE/ice/cice_model_${ICERESdec}.res_$CDATE.nc $DATA/$iceic
+  if [[ $CDUMP == "gefs" ]]; then
+    $NCP -p $ROTDIR/$CDUMP.$PDY/$cyc/$RUNMEM/ice/INPUT/cice_model_${ICERESdec}.res_$CDATE.nc $DATA/$iceic
+  else
+    $NCP -p $ICSDIR/$CDATE/ice/cice_model_${ICERESdec}.res_$CDATE.nc $DATA/$iceic
+  fi
 
   echo "Link CICE fixed files"
   $NLN -sf $FIXcice/$ICERES/${ice_grid_file} $DATA/
