@@ -29,8 +29,8 @@ if [  $hname == 'h'  ] ; then
     fi
     target=hera
     module purge
-    module load intel
-    module load impi
+    module load intel/18.0.5.274
+    module load impi/2018.4.274
     export NCEPLIBS=/scratch2/NCEPDEV/nwprod/NCEPLIBS
     module use $NCEPLIBS/modulefiles
     #export WRFPATH=$NCEPLIBS/wrf.shared.new/v1.1.1/src

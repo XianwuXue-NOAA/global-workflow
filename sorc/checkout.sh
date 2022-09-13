@@ -26,11 +26,11 @@ err=0
 echo fv3gfs checkout ...
 if [[ ! -d fv3gfs.fd ]] ; then
     rm -f ${topdir}/checkout-fv3gfs.log
-    git clone https://github.com/NOAA-EMC/FV3-GSDCHEM-WW3.git fv3gfs.fd >> ${LOG_DIR}/checkout-fv3gfs.log 2>&1
+    git clone https://github.com/XianwuXue-NOAA/FV3-GSDCHEM-WW3.git fv3gfs.fd >> ${LOG_DIR}/checkout-fv3gfs.log 2>&1
     rc=$?
     ((err+=$rc))
     cd fv3gfs.fd
-	git checkout gefs_v12.3.0-0
+	git checkout release/gefs_v12_port2hera #gefs_v12.3.0-0
 	git submodule update --init --recursive
     rc=$?
     ((err+=$rc))
@@ -56,11 +56,11 @@ fi
 echo ufs_utils checkout ...
 if [[ ! -d ufs_utils.fd ]] ; then
     rm -f ${topdir}/checkout-ufs_utils.log
-    git clone https://github.com/ufs-community/UFS_UTILS.git ufs_utils.fd >> ${LOG_DIR}/checkout-ufs_utils.fd.log 2>&1
+    git clone https://github.com/XianwuXue-NOAA/UFS_UTILS.git ufs_utils.fd >> ${LOG_DIR}/checkout-ufs_utils.fd.log 2>&1
     rc=$?
     ((err+=$rc))
     cd ufs_utils.fd
-    git checkout ops-gefsv12.2
+    git checkout release/gefs_v12_port2hera #ops-gefsv12.2
     git submodule update --init --recursive
     cd ${topdir}
 else
@@ -83,11 +83,11 @@ fi
 echo GSD-prep-chem checkout ...
 if [[ ! -d gsd_prep_chem.fd ]] ; then
     rm -f ${LOG_DIR}/checkout-gsd-prep-chem.log
-    git clone https://github.com/NOAA-GSL/GSL-prep-chem.git gsd_prep_chem.fd >> ${LOG_DIR}/checkout-gsd-prep-chem.log 2>&1
+    git clone https://github.com/XianwuXue-NOAA/GSL-prep-chem.git gsd_prep_chem.fd >> ${LOG_DIR}/checkout-gsd-prep-chem.log 2>&1
     rc=$?
     ((err+=$rc))
     cd gsd_prep_chem.fd
-    git checkout gefs_v12.2.0
+    git checkout release/gefs_v12_port2hera #gefs_v12.2.0
     cd ${topdir}
 else
     echo 'Skip.  Directory gsd_prep_chem.fd already exists.'
