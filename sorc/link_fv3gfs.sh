@@ -37,7 +37,7 @@ elif [ $machine = "dell" ]; then
 elif [ $machine = "theia" ]; then
     FIX_DIR="/scratch4/NCEPDEV/global/save/glopara/git/fv3gfs/fix"
 elif [ $machine = "hera" ]; then
-    FIX_DIR="/scratch1/NCEPDEV/global/glopara/fix"
+    FIX_DIR="/scratch1/NCEPDEV/global/glopara/fix_nco_gfsv15"
 elif [ $machine = "wcoss2" ]; then
     FIX_DIR="/lfs/h2/emc/global/save/emc.global/FIX/fix_nco_gfsv15"
 fi
